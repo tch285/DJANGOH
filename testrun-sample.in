@@ -1,0 +1,51 @@
+OUTFILENAM
+testrun-sample
+TITLE
+DJANGOH 4.6.17 for proton, NC, NLO at 5x41, Wmin=4
+EL-BEAM
+            5.0D0    0.0D0    -1
+PR-BEAM
+            41.0D0   0.0D0
+GSW-PARAM
+            2 1 3 1 1 1 2 1 1 1 1
+KINEM-CUTS
+            3   0.00001D0  1.00D0  0.00001D0  1.0D0  1.0D-1  1D6  4.0D0
+EGAM-MIN
+            0D0
+INT-OPT-NC
+            1 30 30 30 30  0 0 0 0
+INT-OPT-CC
+            0 0 0 0
+INT-ONLY
+            0
+INT-POINTS
+            50000
+SAM-OPT-NC
+            1 1 1 1 1  0 0 0 0
+SAM-OPT-CC
+            0 0 0 0
+STRUCTFUNC
+            0  2  10150
+FLONG
+            111  0.01  0.03
+ALFAS
+            1   1   0.20   0.235
+NFLAVORS
+            0   5
+RNDM-SEEDS
+            -1   1
+START
+            10000
+SOPHIA  
+            3.0
+OUT-LEP
+            1
+FRAG
+            1
+CASCADES
+            12
+MAX-VIRT
+            5
+WREM-MIN
+            2.0
+CONTINUE 
