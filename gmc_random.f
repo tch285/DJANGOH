@@ -119,6 +119,7 @@
        real function ranf (dummy)
        implicit none
        real dummy, r
+       external ranlux
        call ranlux(r,1)    
        ranf = r
        return
@@ -131,6 +132,7 @@
        implicit none
        integer idummy
        real r
+       external ranlux
        call ranlux(r,1)
        rlu = r
        return

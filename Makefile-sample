@@ -1,0 +1,35 @@
+###################################################
+#                                                 #
+#   Makefile for package djangoh 4.6.18           #
+#                                                 #
+#   HS: 16.08.2021                                #
+#                                                 #
+###################################################
+
+-include config.mk
+
+OBJS = $(addsuffix .o, $(basename $(SRCS)))
+
+SRCS = djangoh_h.f djangoh_l.f djangoh_u.f djangoh_p.f djangoh_t.f \
+	sophia-dj.f pythia-6.4.24-dj.f jetset7409.f
+
+all: gmc_random.o cernlibs.o djangoh
+
+%.o: %.f
+	$(CXX) $(CFFLAGS) -o $@ -c $<
+
+gmc_random.o: gmc_random.f
+	$(CXX) $(CFFLAGS) -ffree-form -c gmc_random.f -o gmc_random.o
+
+cernlibs.o: cernlibs.f
+	$(CXX) $(CFFLAGS) -o $@ -c $<
+
+djangoh: $(OBJS) gmc_random.o cernlibs.o
+	$(CXX) $(CFFLAGS) -o $@ $(OBJS) gmc_random.o cernlibs.o $(LIBS)
+
+
+clean:
+	rm -f $(OBJS) $(PROGRAM)
+	rm -f gmc_random.o
+	rm -f cernlibs.o
+

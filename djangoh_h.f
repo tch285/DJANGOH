@@ -32,7 +32,7 @@ C
 C     with extensions by T. Martini (for hadron polarization, 2012+13)
 C     Last modification for muon scattering at Compass
 C
-C     VERSION 4.6.17,  Aug 16 2021
+C     VERSION 4.6.18,  Aug 23 2021
 C
 C***********************************************************************
 C
@@ -289,7 +289,7 @@ C---PRINT THE TITLE
      3//,10X,'                         HERACLES '
      4//,10X,'     Event generator for deep-inelastic e-P collisions '
      5 /,10X,'              including radiative corrections  '
-     6//,10X,'                 VERSION 4.6.17, 16.08.2021 '//
+     6//,10X,'                 VERSION 4.6.18, 23.08.2021 '//
      8//,10X,'                      H. Spiesberger '//
      9' **************************************************',
      1'****************************',//)
@@ -1122,11 +1122,18 @@ ctest        POLARI=-1.0D0
       ELSEIF (ICPASY.EQ.2) THEN
         IOPLOT=-1
         CHNULL=0.0D0
-        LLEPT=+1
+ctest        LLEPT=+1
+        LLEPT=-1
         WRITE(LUNOUT,'(5X,A)')
      *  ' *** Calculate only charge-odd part '
         WRITE(LUNOUT,'(5X,A)')
      *  '     of the cross section: No event generation '
+        WRITE(LUNOUT,'(5X,A)')
+     *  '  ++++++++++++++++++++++++++++++++++++++++++++ '
+        WRITE(LUNOUT,'(5X,A)')
+     *  '  +++++   PRELIMINARY!  STILL TESTING    +++++ '
+        WRITE(LUNOUT,'(5X,A)')
+     *  '  ++++++++++++++++++++++++++++++++++++++++++++ '
       ELSE
         PONULL=1.0D0
         CHNULL=1.0D0
@@ -7011,6 +7018,7 @@ C
       COMMON /HSDPDF/ DQU,DQBU,DQD,DQBD,DQS,DQBS,DQC,DQBC,DQB,DQBB,
      *                DQT,DQBT
       COMMON /HSPARM/ POLARI,HPOLAR,LLEPT,LQUA
+      COMMON /HSASY0/ PONULL,CHNULL,ICPASY
       COMMON /HSNUCL/ HNA,HNZ,INUMOD
       COMMON /HSGIKP/ GS,GU,GX,TP,UP
       COMMON /HSFIJK/ F1(2,2),F2(2,2),F3(2,2)
@@ -7147,7 +7155,7 @@ C
       ELSE
         SU1 = S*S+SS*SS+U*U+US*US
         SU2 = (S-U)*(S+U) + (SS-US)*(SS+US)
-        PROPI1= - LLEPT/8D0/XS
+        PROPI1= - 1D0/8D0/XS
      &       * (SS/DKPS/DKQS + S/DKP/DKQ + U/DKPS/DKQ + US/DKP/DKQS)
       ENDIF
 
@@ -7173,7 +7181,7 @@ C
      &     -MPRO2/(A1-TS)/A1
      &     +FAC4/(A1*A1+TS*TS)/A1/A1  )
       FK1=-2D0*MEI2*(GS-GU)
-      R3= -DFLOAT(LLEPT)*4D0*(
+      R3= -4D0*(
      &     (GS-GU)/(A1+A2)/A1
      &     +FK1/(A1+A2-TS)*(-1D0/(A1+A2)-1D0/(A1-TS))/A1
      &     -(GX/2D0-GS)/(A1-TS)/A1
@@ -7190,12 +7198,14 @@ C..................................STRUCTURE FUNCTIONS
          CALL HSSTRF(XS,-TS)
          DO 11 IB1=1,2
           DO 12 IB2=1,2
-           CQP(12)=CQP(12)+F1(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2)
-     &                    +F2(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
-     &                    +F3(IB1,IB2)*R3*RUNALP(IB1)*RUNALP(IB2)
-     &            -HPOLAR*(G1(IB1,IB2)*R3*2D0*RUNALP(IB1)*RUNALP(IB2)
-     &                    +G4(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
-     &                    +G3(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2))
+             CQP(12)=CQP(12)
+     &         +CHNULL*F1(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2)
+     &         +CHNULL*F2(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
+     &         +F3(IB1,IB2)*DFLOAT(LLEPT)*R3*RUNALP(IB1)*RUNALP(IB2)
+     &       -HPOLAR*(
+     &         +G1(IB1,IB2)*DFLOAT(LLEPT)*R3*2D0*RUNALP(IB1)*RUNALP(IB2)
+     &         +CHNULL*G4(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
+     &         +CHNULL*G3(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2))
  12       CONTINUE
  11      CONTINUE
         SUMME=CQP(12)
@@ -7214,14 +7224,30 @@ C..................................PARTON DENSITIES
         GUM=0D0
         GDP=0D0
         GDM=0D0
-        FUPI = 0D0
-        FDOI = 0D0
-        FUPIB =0D0
-        FDOIB =0D0
-        GUPI = 0D0
-        GDOI = 0D0
-        GUPIB =0D0
-        GDOIB =0D0
+c        FUPI = 0D0
+c        FDOI = 0D0
+c        FUPIB =0D0
+c        FDOIB =0D0
+c        GUPI = 0D0
+c        GDOI = 0D0
+c        GUPIB =0D0
+c        GDOIB =0D0
+        FUPI0 = 0D0
+        FDOI0 = 0D0
+        FUPIB0 =0D0
+        FDOIB0 =0D0
+        GUPI0 = 0D0
+        GDOI0 = 0D0
+        GUPIB0 =0D0
+        GDOIB0 =0D0
+        FUPIC = 0D0
+        FDOIC = 0D0
+        FUPIBC =0D0
+        FDOIBC =0D0
+        GUPIC = 0D0
+        GDOIC = 0D0
+        GUPIBC =0D0
+        GDOIBC =0D0
         IF(LPAR(14).NE.0)THEN
           SU3 = (S*S+U*U)/2D0
           SU4 = (S-U)*(S+U)/2D0
@@ -7248,8 +7274,7 @@ C..................................PARTON DENSITIES
      &        -2D0*MPRO2*(1D0/TS/TS+1D0/A1/A2)
      &        +MPRO2/TS*(1D0/A1-1D0/A2) )
           RBLEP =
-     &     -DFLOAT(LLEPT)*(
-     &        (GS-GU)/A1/A2
+     &       -((GS-GU)/A1/A2
      &        -2D0*MEI2*(GS-GU)/A1/A2/TS
      &        +(GX/2D0-GS)/A1/TS
      &        +(GX/2D0-GU)/A2/TS
@@ -7259,13 +7284,18 @@ C..................................PARTON DENSITIES
      &        +(2D0*GS-GX)*MEI2/A2/A2/TS)
           PLEP=0D0
           PHAD=0D0
-          PFRCH=0D0
+c          PFRCH=0D0
+          PFRCH0=0D0
+          PFRCHC=0D0
           GLEP=0D0
           GHAD=0D0
-          GFRCH=0D0
+c          GFRCH=0D0
+          GFRCH0=0D0
+          GFRCHC=0D0
           DO 511 IB1=1,2
             DO 512 IB2=1,2
-              PLEP=(AFIJ(2,IB1,IB2)*RALEP+BFIJ(2,IB1,IB2)*RBLEP)
+              PLEP=(AFIJ(2,IB1,IB2)*RALEP
+     &               +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*RBLEP)
      &             *DSBOS(IB1)*DSBOS(IB2) + PLEP
               PHAD=((AFIJ(2,IB1,IB2)*SU1
      &              -BFIJ(2,IB1,IB2)*SU2*LLEPT)*PPHA1
@@ -7274,10 +7304,15 @@ C..................................PARTON DENSITIES
      &             +(AFIJ(2,IB1,IB2)*SU5
      &              -BFIJ(2,IB1,IB2)*SU6*LLEPT)*PPHA3)
      &            *DBOS(IB1)*DBOS(IB2)/T/T*4D0/9D0/XS/8D0 + PHAD
-              PFRCH=(AFIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
-     &              +BFIJ(2,IB1,IB2)*R3/4D0)
-     &             *DSBOS(IB1)*DSBOS(IB2) + PFRCH
-              GLEP=(AGIJ(2,IB1,IB2)*RALEP+BGIJ(2,IB1,IB2)*RBLEP)
+c              PFRCH=(AFIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
+c     &              +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3/4D0)
+c     &             *DSBOS(IB1)*DSBOS(IB2) + PFRCH
+              PFRCH0=AFIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
+     &               *DSBOS(IB1)*DSBOS(IB2) + PFRCH0
+              PFRCHC=+BFIJ(2,IB1,IB2)*R3/4D0
+     &               *DSBOS(IB1)*DSBOS(IB2) + PFRCHC
+              GLEP=(AGIJ(2,IB1,IB2)*RALEP
+     &              +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*RBLEP)
      &             *DSBOS(IB1)*DSBOS(IB2) + GLEP
               GHAD=((AGIJ(2,IB1,IB2)*SU1
      &              -BGIJ(2,IB1,IB2)*SU2*LLEPT)*PPHA1
@@ -7286,84 +7321,148 @@ C..................................PARTON DENSITIES
      &             +(AGIJ(2,IB1,IB2)*SU5
      &              -BGIJ(2,IB1,IB2)*SU6*LLEPT)*PPHA3)
      &            *DBOS(IB1)*DBOS(IB2)/T/T*4D0/9D0/XS/8D0 + GHAD
-              GFRCH=(AGIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
-     &              +BGIJ(2,IB1,IB2)*R3/4D0)
-     &             *DSBOS(IB1)*DSBOS(IB2) + GFRCH
+c              GFRCH=(AGIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
+c     &              +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*R3/4D0)
+c     &             *DSBOS(IB1)*DSBOS(IB2) + GFRCH
+              GFRCH0=AGIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
+     &               *DSBOS(IB1)*DSBOS(IB2) + GFRCH0
+              GFRCHC=+BGIJ(2,IB1,IB2)*R3/4D0
+     &               *DSBOS(IB1)*DSBOS(IB2) + GFRCHC
  512        CONTINUE
  511      CONTINUE
           SUTOT=PHAD+PLEP
-          FRCH=PFRCH/SUTOT
+c          FRCH=PFRCH/SUTOT
+          FRCH0=PFRCH0/SUTOT
+          FRCHC=PFRCHC/SUTOT
           SGTOT=GHAD+GLEP
-          GRCH=GFRCH/SGTOT
+c          GRCH=GFRCH/SGTOT
+          GRCH0=GFRCH0/SGTOT
+          GRCHC=GFRCHC/SGTOT
         ELSE
-          FRCH=0D0
-          GRCH=0D0
+c          FRCH=0D0
+          FRCH0=0D0
+          FRCHC=0D0
+c          GRCH=0D0
+          GRCH0=0D0
+          GRCHC=0D0
         ENDIF
         DO 501 IB1=1,2
          DO 502 IB2=1,2
           IF(LPAR(12).NE.0)THEN
-           AUP=(AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)+BFIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUP
-           AUM=(AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)-BFIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUM
-           ADP=(AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)+BFIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADP
-           ADM=(AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)-BFIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADM
-           GUP=(AGIJ(2,IB1,IB2)*(R1/2D0+R2*XS)+BGIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + GUP
-           GUM=(-AGIJ(2,IB1,IB2)*(R1/2D0+R2*XS)+BGIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + GUM
-           GDP=(AGIJ(3,IB1,IB2)*(R1/2D0+R2*XS)+BGIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + GDP
-           GDM=(-AGIJ(3,IB1,IB2)*(R1/2D0+R2*XS)+BGIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + GDM
+             AUP=(CHNULL*AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUP
+             AUM=(CHNULL*AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &            -DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUM
+             ADP=(CHNULL*AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BFIJ(3,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADP
+             ADM=(CHNULL*AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &            -DFLOAT(LLEPT)*BFIJ(3,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADM
+             GUP=(CHNULL*AGIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + GUP
+             GUM=(-CHNULL*AGIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + GUM
+             GDP=(CHNULL*AGIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BGIJ(3,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + GDP
+             GDM=(-CHNULL*AGIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BGIJ(3,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + GDM
           ENDIF
          IF(LPAR(14).NE.0)THEN
           PROPI2 = DBOS(IB1)*DSBOS(IB2)/T/TS
-          AB12UP = AFIJ(2,IB1,IB2)*SU1 - BFIJ(2,IB1,IB2)*SU2*LLEPT
-          AB12UM = AFIJ(2,IB1,IB2)*SU1 + BFIJ(2,IB1,IB2)*SU2*LLEPT
-          AB12DP = AFIJ(3,IB1,IB2)*SU1 - BFIJ(3,IB1,IB2)*SU2*LLEPT
-          AB12DM = AFIJ(3,IB1,IB2)*SU1 + BFIJ(3,IB1,IB2)*SU2*LLEPT
-          GB12UP = AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
-          GB12UM = - AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
-          GB12DP = AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
-          GB12DM = - AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
-          FUPI = AB12UP*PROPI1 * PROPI2                   + FUPI
-          FDOI = AB12DP*PROPI1 * PROPI2                   + FDOI
-          FUPIB =AB12UM*PROPI1 * PROPI2                   + FUPIB
-          FDOIB =AB12DM*PROPI1 * PROPI2                   + FDOIB
-          GUPI = GB12UP*PROPI1 * PROPI2                   + GUPI
-          GDOI = GB12DP*PROPI1 * PROPI2                   + GDOI
-          GUPIB =GB12UM*PROPI1 * PROPI2                   + GUPIB
-          GDOIB =GB12DM*PROPI1 * PROPI2                   + GDOIB
+c          AB12UP = AFIJ(2,IB1,IB2)*SU1 - BFIJ(2,IB1,IB2)*SU2*LLEPT
+c          AB12UM = AFIJ(2,IB1,IB2)*SU1 + BFIJ(2,IB1,IB2)*SU2*LLEPT
+c          AB12DP = AFIJ(3,IB1,IB2)*SU1 - BFIJ(3,IB1,IB2)*SU2*LLEPT
+c          AB12DM = AFIJ(3,IB1,IB2)*SU1 + BFIJ(3,IB1,IB2)*SU2*LLEPT
+c          GB12UP = AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
+c          GB12UM = - AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
+c          GB12DP = AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
+c          GB12DM = - AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
+c          FUPI = AB12UP*PROPI1*DFLOAT(LLEPT) * PROPI2     + FUPI
+c          FDOI = AB12DP*PROPI1*DFLOAT(LLEPT) * PROPI2     + FDOI
+c          FUPIB =AB12UM*PROPI1*DFLOAT(LLEPT) * PROPI2     + FUPIB
+c          FDOIB =AB12DM*PROPI1*DFLOAT(LLEPT) * PROPI2     + FDOIB
+c          GUPI = GB12UP*PROPI1*DFLOAT(LLEPT) * PROPI2     + GUPI
+c          GDOI = GB12DP*PROPI1*DFLOAT(LLEPT) * PROPI2     + GDOI
+c          GUPIB =GB12UM*PROPI1*DFLOAT(LLEPT) * PROPI2     + GUPIB
+c          GDOIB =GB12DM*PROPI1*DFLOAT(LLEPT) * PROPI2     + GDOIB
+c          if (icpasy.eq.2) then
+          FUPI0 = - BFIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + FUPI0
+          FDOI0 = - BFIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + FDOI0
+          FUPIB0 =+ BFIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + FUPIB0
+          FDOIB0 =+ BFIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + FDOIB0
+          GUPI0 = - BGIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + GUPI0
+          GDOI0 = - BGIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + GDOI0
+          GUPIB0 =- BGIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + GUPIB0
+          GDOIB0 =- BGIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + GDOIB0
+          FUPIC = AFIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + FUPIC
+          FDOIC = AFIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + FDOIC
+          FUPIBC =AFIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + FUPIBC
+          FDOIBC =AFIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + FDOIBC
+          GUPIC = AGIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + GUPIC
+          GDOIC = AGIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + GDOIC
+          GUPIBC =- AGIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + GUPIBC
+          GDOIBC =- AGIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + GDOIBC
+c          endif
          ENDIF
  502     CONTINUE
  501    CONTINUE
-        CQP(1) =  QU *(AUP + FRCH*FUPI  *  2D0/3D0 )
-     &  - HPOLAR*DQU *(GUP + GRCH*GUPI  *  2D0/3D0 )
-        CQP(2) =  QBU*(AUM + FRCH*FUPIB *(-2D0/3D0)) 
-     &  - HPOLAR*DQBU*(GUM + GRCH*GUPIB *(-2D0/3D0)) + CQP(1)
-        CQP(3) =  QD *(ADP + FRCH*FDOI  *(-1D0/3D0))
-     &  - HPOLAR*DQD *(GDP + GRCH*GDOI  *(-1D0/3D0)) + CQP(2)
-        CQP(4) =  QBD*(ADM + FRCH*FDOIB *  1D0/3D0 )
-     &  - HPOLAR*DQBD*(GDM + GRCH*GDOIB *  1D0/3D0 ) + CQP(3)
-        CQP(5) =  QS *(ADP + FRCH*FDOI  *(-1D0/3D0))
-     &  - HPOLAR*DQS *(GDP + GRCH*GDOI  *(-1D0/3D0)) + CQP(4)
-        CQP(6) =  QBS*(ADM + FRCH*FDOIB *  1D0/3D0 )
-     &  - HPOLAR*DQBS*(GDM + GRCH*GDOIB *  1D0/3D0 ) + CQP(5)
-        CQP(7) =  QC *(AUP + FRCH*FUPI  *  2D0/3D0 )
-     &  - HPOLAR*DQC *(GUP + GRCH*GUPI  *  2D0/3D0 ) + CQP(6)
-        CQP(8) =  QBC*(AUM + FRCH*FUPIB *(-2D0/3D0))
-     &  - HPOLAR*DQBC*(GUM + GRCH*GUPIB *(-2D0/3D0)) + CQP(7)
-        CQP(9) =  QB *(ADP + FRCH*FDOI  *(-1D0/3D0))
-     &  - HPOLAR*DQB *(GDP + GRCH*GDOI  *(-1D0/3D0)) + CQP(8)
-        CQP(10) = QBB*(ADM + FRCH*FDOIB *  1D0/3D0 )
-     &  - HPOLAR*DQBB*(GDM + GRCH*GDOIB *  1D0/3D0 ) + CQP(9)
-        CQP(11) = QT *(AUP + FRCH*FUPI  *  2D0/3D0 )
-     &  - HPOLAR*DQT *(GUP + GRCH*GUPI  *  2D0/3D0 ) + CQP(10)
-        CQP(12) = QBT*(AUM + FRCH*FUPIB *(-2D0/3D0))
-     &  - HPOLAR*DQBT*(GUM + GRCH*GUPIB *(-2D0/3D0)) + CQP(11)
+c        FUPI=FUPI*FRCH
+c        FDOI=FDOI*FRCH
+c        FUPIB=FUPIB*FRCH
+c        FDOIB=FDOIB*FRCH
+c        GUPI=GUPI*GRCH
+c        GDOI=GDOI*GRCH
+c        GUPIB=GUPIB*GRCH
+c        GDOIB=GDOIB*GRCH
+        
+        FUPI=CHNULL*(FUPI0*FRCH0+FUPIC*FRCHC)
+     &      +DFLOAT(LLEPT)*(FUPI0*FRCHC+FUPIC*FRCH0)
+        FDOI=CHNULL*(FDOI0*FRCH0+FDOIC*FRCHC)
+     &      +DFLOAT(LLEPT)*(FDOI0*FRCHC+FDOIC*FRCH0)
+        FUPIB=CHNULL*(FUPIB0*FRCH0+FUPIBC*FRCHC)
+     &       +DFLOAT(LLEPT)*(FUPIB0*FRCHC+FUPIBC*FRCH0)
+        FDOIB=CHNULL*(FDOIB0*FRCH0+FDOIBC*FRCHC)
+     &       +DFLOAT(LLEPT)*(FDOIB0*FRCHC+FDOIBC*FRCH0)
+        GUPI=CHNULL*(GUPI0*GRCH0+GUPIC*GRCHC)
+     &      +DFLOAT(LLEPT)*(GUPI0*GRCHC+GUPIC*GRCH0)
+        GDOI=CHNULL*(GDOI0*GRCH0+GDOIC*GRCHC)
+     &      +DFLOAT(LLEPT)*(GDOI0*GRCHC+GDOIC*GRCH0)
+        GUPIB=CHNULL*(GUPIB0*GRCH0+GUPIBC*GRCHC)
+     &       +DFLOAT(LLEPT)*(GUPIB0*GRCHC+GUPIBC*GRCH0)
+        GDOIB=CHNULL*(GDOIB0*GRCH0+GDOIBC*GRCHC)
+     &       +DFLOAT(LLEPT)*(GDOIB0*GRCHC+GDOIBC*GRCH0)
+
+        CQP(1) =  QU *(AUP + FUPI  *  2D0/3D0 )
+     &  - HPOLAR*DQU *(GUP + GUPI  *  2D0/3D0 )
+        CQP(2) =  QBU*(AUM + FUPIB *(-2D0/3D0)) 
+     &  - HPOLAR*DQBU*(GUM + GUPIB *(-2D0/3D0)) + CQP(1)
+        CQP(3) =  QD *(ADP + FDOI  *(-1D0/3D0))
+     &  - HPOLAR*DQD *(GDP + GDOI  *(-1D0/3D0)) + CQP(2)
+        CQP(4) =  QBD*(ADM + FDOIB *  1D0/3D0 )
+     &  - HPOLAR*DQBD*(GDM + GDOIB *  1D0/3D0 ) + CQP(3)
+        CQP(5) =  QS *(ADP + FDOI  *(-1D0/3D0))
+     &  - HPOLAR*DQS *(GDP + GDOI  *(-1D0/3D0)) + CQP(4)
+        CQP(6) =  QBS*(ADM + FDOIB *  1D0/3D0 )
+     &  - HPOLAR*DQBS*(GDM + GDOIB *  1D0/3D0 ) + CQP(5)
+        CQP(7) =  QC *(AUP + FUPI  *  2D0/3D0 )
+     &  - HPOLAR*DQC *(GUP + GUPI  *  2D0/3D0 ) + CQP(6)
+        CQP(8) =  QBC*(AUM + FUPIB *(-2D0/3D0))
+     &  - HPOLAR*DQBC*(GUM + GUPIB *(-2D0/3D0)) + CQP(7)
+        CQP(9) =  QB *(ADP + FDOI  *(-1D0/3D0))
+     &  - HPOLAR*DQB *(GDP + GDOI  *(-1D0/3D0)) + CQP(8)
+        CQP(10) = QBB*(ADM + FDOIB *  1D0/3D0 )
+     &  - HPOLAR*DQBB*(GDM + GDOIB *  1D0/3D0 ) + CQP(9)
+        CQP(11) = QT *(AUP + FUPI  *  2D0/3D0 )
+     &  - HPOLAR*DQT *(GUP + GUPI  *  2D0/3D0 ) + CQP(10)
+        CQP(12) = QBT*(AUM + FUPIB *(-2D0/3D0))
+     &  - HPOLAR*DQBT*(GUM + GUPIB *(-2D0/3D0)) + CQP(11)
         SUMME=CQP(12)
       ELSEIF (IPDFOP.GE.2) THEN
 C..................................PARTON DISTRIBUTION FUNCTIONS
@@ -7375,14 +7474,18 @@ C                                  INCLUDING F_L
         ADM=0D0
         DO 521 IB1=1,2
          DO 522 IB2=1,2
-           AUP=(AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)+BFIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUP
-           AUM=(AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)-BFIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUM
-           ADP=(AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)+BFIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADP
-           ADM=(AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)-BFIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADM
+            AUP=(CHNULL*AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &           +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3)
+     &         /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUP
+            AUM=(CHNULL*AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &           -DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3)
+     &         /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUM
+            ADP=(CHNULL*AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &           +DFLOAT(LLEPT)*BFIJ(3,IB1,IB2)*R3)
+     &         /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADP
+            ADM=(CHNULL*AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &           -DFLOAT(LLEPT)*BFIJ(3,IB1,IB2)*R3)
+     &         /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADM
  522     CONTINUE
  521    CONTINUE
         CQP(1) =  QU *AUP
@@ -7400,9 +7503,10 @@ C                                  INCLUDING F_L
         SUMME=0D0
         DO 531 IB1=1,2
          DO 532 IB2=1,2
-          SUMME=SUMME+F1(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2)
-     &                +F2(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
-     &                +F3(IB1,IB2)*R3*RUNALP(IB1)*RUNALP(IB2)
+            SUMME=SUMME
+     &      +F1(IB1,IB2)*CHNULL*R1*RUNALP(IB1)*RUNALP(IB2)
+     &      +F2(IB1,IB2)*CHNULL*R2*RUNALP(IB1)*RUNALP(IB2)
+     &      +F3(IB1,IB2)*DFLOAT(LLEPT)*R3*RUNALP(IB1)*RUNALP(IB2)
  532     CONTINUE
  531    CONTINUE
         RNORM=SUMME/CQP(12)
@@ -7606,6 +7710,7 @@ C
       COMMON /HSCMSP/ EQ,PQ,EEL,PEL,ES,PS,COSE,SINE,OMEGA
       COMMON /HSIKP/  S,T,U,SS,TS,US,DKP,DKPS,DKQ,DKQS
       COMMON /HSPARM/ POLARI,HPOLAR,LLEPT,LQUA
+      COMMON /HSASY0/ PONULL,CHNULL,ICPASY
       COMMON /HSNUCL/ HNA,HNZ,INUMOD
       COMMON /HSGIKP/ GS,GU,GX,TP,UP
       COMMON /HSFIJK/ F1(2,2),F2(2,2),F3(2,2)
@@ -7742,7 +7847,7 @@ C
       ELSE
         SU1 = S*S+SS*SS+U*U+US*US
         SU2 = (S-U)*(S+U) + (SS-US)*(SS+US)
-        PROPI1= - LLEPT/8D0/XS
+        PROPI1= - 1D0/8D0/XS
      &       * (SS/DKPS/DKQS + S/DKP/DKQ + U/DKPS/DKQ + US/DKP/DKQS)
       ENDIF
 
@@ -7767,7 +7872,7 @@ C
      &     +MPRO2/(A2-TS)/A2
      &     +FAC4/(A2*A2+TS*TS)/A2/A2 )
       FK1=-2D0*MEI2*(GS-GU)
-      R3= -DFLOAT(LLEPT)*4D0*(
+      R3= -4D0*(
      &     (GS-GU)/(A1+A2)/A2
      &     +FK1/(A1+A2-TS)*(-1D0/(A1+A2)-1D0/(A2-TS))/A2
      &     -(GX/2D0-GU)/(A2-TS)/A2
@@ -7784,12 +7889,14 @@ C..................................STRUCTURE FUNCTIONS
          CALL HSSTRF(XS,-TS)
          DO 11 IB1=1,2
           DO 12 IB2=1,2
-           CQP(12)=CQP(12)+F1(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2)
-     &                    +F2(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
-     &                    +F3(IB1,IB2)*R3*RUNALP(IB1)*RUNALP(IB2)
-     &            -HPOLAR*(G1(IB1,IB2)*R3*2D0*RUNALP(IB1)*RUNALP(IB2)
-     &                    +G4(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
-     &                    +G3(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2))
+             CQP(12)=CQP(12)
+     &      +CHNULL*F1(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2)
+     &      +CHNULL*F2(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
+     &      +F3(IB1,IB2)*DFLOAT(LLEPT)*R3*RUNALP(IB1)*RUNALP(IB2)
+     &     -HPOLAR*(
+     &      +G1(IB1,IB2)*DFLOAT(LLEPT)*R3*2D0*RUNALP(IB1)*RUNALP(IB2)
+     &      +CHNULL*G4(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
+     &      +CHNULL*G3(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2))
  12       CONTINUE
  11      CONTINUE
         SUMME = CQP(12)
@@ -7808,14 +7915,30 @@ C..................................PARTON DENSITIES
         GUM=0D0
         GDP=0D0
         GDM=0D0
-        FUPI = 0D0
-        FDOI = 0D0
-        FUPIB =0D0
-        FDOIB =0D0
-        GUPI = 0D0
-        GDOI = 0D0
-        GUPIB =0D0
-        GDOIB =0D0
+c        FUPI = 0D0
+c        FDOI = 0D0
+c        FUPIB =0D0
+c        FDOIB =0D0
+c        GUPI = 0D0
+c        GDOI = 0D0
+c        GUPIB =0D0
+c        GDOIB =0D0
+        FUPI0 = 0D0
+        FDOI0 = 0D0
+        FUPIB0 =0D0
+        FDOIB0 =0D0
+        GUPI0 = 0D0
+        GDOI0 = 0D0
+        GUPIB0 =0D0
+        GDOIB0 =0D0
+        FUPIC = 0D0
+        FDOIC = 0D0
+        FUPIBC =0D0
+        FDOIBC =0D0
+        GUPIC = 0D0
+        GDOIC = 0D0
+        GUPIBC =0D0
+        GDOIBC =0D0
         IF(LPAR(14).NE.0)THEN
           SU3 = (S*S+U*U)/2D0
           SU4 = (S-U)*(S+U)/2D0
@@ -7842,8 +7965,7 @@ C..................................PARTON DENSITIES
      &        -2D0*MPRO2*(1D0/TS/TS+1D0/A1/A2)
      &        +MPRO2/TS*(1D0/A1-1D0/A2) )
           RBLEP =
-     &     -DFLOAT(LLEPT)*(
-     &       (GS-GU)/A1/A2
+     &       -((GS-GU)/A1/A2
      &       -2D0*MEI2*(GS-GU)/A1/A2/TS
      &       +(GX/2D0-GS)/A1/TS
      &       +(GX/2D0-GU)/A2/TS
@@ -7853,10 +7975,18 @@ C..................................PARTON DENSITIES
      &       +(2D0*GS-GX)*MEI2/A2/A2/TS)
           PLEP=0D0
           PHAD=0D0
-          PFRCH=0D0
+c          PFRCH=0D0
+          PFRCH0=0D0
+          PFRCHC=0D0
+          GLEP=0D0
+          GHAD=0D0
+c          GFRCH=0D0
+          GFRCH0=0D0
+          GFRCHC=0D0
           DO 511 IB1=1,2
             DO 512 IB2=1,2
-              PLEP=(AFIJ(2,IB1,IB2)*RALEP+BFIJ(2,IB1,IB2)*RBLEP)
+              PLEP=(AFIJ(2,IB1,IB2)*RALEP
+     &               +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*RBLEP)
      &             *DSBOS(IB1)*DSBOS(IB2) + PLEP
               PHAD =((AFIJ(2,IB1,IB2)*SU1
      &               -BFIJ(2,IB1,IB2)*SU2*LLEPT)*PPHA1
@@ -7865,10 +7995,15 @@ C..................................PARTON DENSITIES
      &              +(AFIJ(2,IB1,IB2)*SU5
      &               -BFIJ(2,IB1,IB2)*SU6*LLEPT)*PPHA3)
      &             *DBOS(IB1)*DBOS(IB2)/T/T*4D0/9D0/XS/8D0 + PHAD
-              PFRCH=(AFIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
-     &              +BFIJ(2,IB1,IB2)*R3/4D0)
-     &             *DSBOS(IB1)*DSBOS(IB2) + PFRCH
-              GLEP=(AGIJ(2,IB1,IB2)*RALEP+BGIJ(2,IB1,IB2)*RBLEP)
+c              PFRCH=(AFIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
+c     &              +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3/4D0)
+c     &             *DSBOS(IB1)*DSBOS(IB2) + PFRCH
+              PFRCH0=AFIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
+     &               *DSBOS(IB1)*DSBOS(IB2) + PFRCH0
+              PFRCHC=+BFIJ(2,IB1,IB2)*R3/4D0
+     &               *DSBOS(IB1)*DSBOS(IB2) + PFRCHC
+              GLEP=(AGIJ(2,IB1,IB2)*RALEP
+     &              +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*RBLEP)
      &             *DSBOS(IB1)*DSBOS(IB2) + GLEP
               GHAD =((AGIJ(2,IB1,IB2)*SU1
      &               -BGIJ(2,IB1,IB2)*SU2*LLEPT)*PPHA1
@@ -7877,84 +8012,148 @@ C..................................PARTON DENSITIES
      &              +(AGIJ(2,IB1,IB2)*SU5
      &               -BGIJ(2,IB1,IB2)*SU6*LLEPT)*PPHA3)
      &             *DBOS(IB1)*DBOS(IB2)/T/T*4D0/9D0/XS/8D0 + GHAD
-              GFRCH=(AGIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
-     &              +BGIJ(2,IB1,IB2)*R3/4D0)
-     &             *DSBOS(IB1)*DSBOS(IB2) + GFRCH
+c              GFRCH=(AGIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
+c     &              +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*R3/4D0)
+c     &             *DSBOS(IB1)*DSBOS(IB2) + GFRCH
+              GFRCH0=AGIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
+     &               *DSBOS(IB1)*DSBOS(IB2) + GFRCH0
+              GFRCHC=+BGIJ(2,IB1,IB2)*R3/4D0
+     &               *DSBOS(IB1)*DSBOS(IB2) + GFRCHC
  512        CONTINUE
  511      CONTINUE
           SUTOT=PHAD+PLEP
-          FRCH=PFRCH/SUTOT
+c          FRCH=PFRCH/SUTOT
+          FRCH0=PFRCH0/SUTOT
+          FRCHC=PFRCHC/SUTOT
           SGTOT=GHAD+GLEP
-          GRCH=GFRCH/SGTOT
+c          GRCH=GFRCH/SGTOT
+          GRCH0=GFRCH0/SGTOT
+          GRCHC=GFRCHC/SGTOT
         ELSE
-          FRCH=0D0
-          GRCH=0D0
+c          FRCH=0D0
+          FRCH0=0D0
+          FRCHC=0D0
+c          GRCH=0D0
+          GRCH0=0D0
+          GRCHC=0D0
         ENDIF
         DO 501 IB1=1,2
          DO 502 IB2=1,2
           IF(LPAR(12).NE.0)THEN
-           AUP=(AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)+BFIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUP
-           AUM=(AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)-BFIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUM
-           ADP=(AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)+BFIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADP
-           ADM=(AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)-BFIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADM
-           GUP=(AGIJ(2,IB1,IB2)*(R1/2D0+R2*XS)+BGIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + GUP
-           GUM=(-AGIJ(2,IB1,IB2)*(R1/2D0+R2*XS)+BGIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + GUM
-           GDP=(AGIJ(3,IB1,IB2)*(R1/2D0+R2*XS)+BGIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + GDP
-           GDM=(-AGIJ(3,IB1,IB2)*(R1/2D0+R2*XS)+BGIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + GDM
+             AUP=(CHNULL*AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUP
+             AUM=(CHNULL*AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &            -DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUM
+             ADP=(CHNULL*AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BFIJ(3,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADP
+             ADM=(CHNULL*AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &            -DFLOAT(LLEPT)*BFIJ(3,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADM
+             GUP=(CHNULL*AGIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + GUP
+             GUM=(-CHNULL*AGIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + GUM
+             GDP=(CHNULL*AGIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BGIJ(3,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + GDP
+             GDM=(-CHNULL*AGIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BGIJ(3,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + GDM
           ENDIF
          IF(LPAR(14).NE.0)THEN
           PROPI2 = DBOS(IB1)*DSBOS(IB2)/T/TS
-          AB12UP = AFIJ(2,IB1,IB2)*SU1 - BFIJ(2,IB1,IB2)*SU2*LLEPT
-          AB12UM = AFIJ(2,IB1,IB2)*SU1 + BFIJ(2,IB1,IB2)*SU2*LLEPT
-          AB12DP = AFIJ(3,IB1,IB2)*SU1 - BFIJ(3,IB1,IB2)*SU2*LLEPT
-          AB12DM = AFIJ(3,IB1,IB2)*SU1 + BFIJ(3,IB1,IB2)*SU2*LLEPT
-          GB12UP = AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
-          GB12UM = - AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
-          GB12DP = AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
-          GB12DM = - AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
-          FUPI = AB12UP*PROPI1 * PROPI2                   + FUPI
-          FDOI = AB12DP*PROPI1 * PROPI2                   + FDOI
-          FUPIB =AB12UM*PROPI1 * PROPI2                   + FUPIB
-          FDOIB =AB12DM*PROPI1 * PROPI2                   + FDOIB
-          GUPI = GB12UP*PROPI1 * PROPI2                   + GUPI
-          GDOI = GB12DP*PROPI1 * PROPI2                   + GDOI
-          GUPIB =GB12UM*PROPI1 * PROPI2                   + GUPIB
-          GDOIB =GB12DM*PROPI1 * PROPI2                   + GDOIB
+c          AB12UP = AFIJ(2,IB1,IB2)*SU1 - BFIJ(2,IB1,IB2)*SU2*LLEPT
+c          AB12UM = AFIJ(2,IB1,IB2)*SU1 + BFIJ(2,IB1,IB2)*SU2*LLEPT
+c          AB12DP = AFIJ(3,IB1,IB2)*SU1 - BFIJ(3,IB1,IB2)*SU2*LLEPT
+c          AB12DM = AFIJ(3,IB1,IB2)*SU1 + BFIJ(3,IB1,IB2)*SU2*LLEPT
+c          GB12UP = AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
+c          GB12UM = - AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
+c          GB12DP = AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
+c          GB12DM = - AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
+c          FUPI = AB12UP*PROPI1*DFLOAT(LLEPT) * PROPI2      + FUPI
+c          FDOI = AB12DP*PROPI1*DFLOAT(LLEPT) * PROPI2      + FDOI
+c          FUPIB =AB12UM*PROPI1*DFLOAT(LLEPT) * PROPI2      + FUPIB
+c          FDOIB =AB12DM*PROPI1*DFLOAT(LLEPT) * PROPI2      + FDOIB
+c          GUPI = GB12UP*PROPI1*DFLOAT(LLEPT) * PROPI2      + GUPI
+c          GDOI = GB12DP*PROPI1*DFLOAT(LLEPT) * PROPI2      + GDOI
+c          GUPIB =GB12UM*PROPI1*DFLOAT(LLEPT) * PROPI2      + GUPIB
+c          GDOIB =GB12DM*PROPI1*DFLOAT(LLEPT) * PROPI2      + GDOIB
+c          if (icpasy.eq.2) then
+          FUPI0 = - BFIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + FUPI0
+          FDOI0 = - BFIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + FDOI0
+          FUPIB0 =+ BFIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + FUPIB0
+          FDOIB0 =+ BFIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + FDOIB0
+          GUPI0 = - BGIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + GUPI0
+          GDOI0 = - BGIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + GDOI0
+          GUPIB0 =- BGIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + GUPIB0
+          GDOIB0 =- BGIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + GDOIB0
+          FUPIC = AFIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + FUPIC
+          FDOIC = AFIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + FDOIC
+          FUPIBC =AFIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + FUPIBC
+          FDOIBC =AFIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + FDOIBC
+          GUPIC = AGIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + GUPIC
+          GDOIC = AGIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + GDOIC
+          GUPIBC =- AGIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + GUPIBC
+          GDOIBC =- AGIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + GDOIBC
+c          endif
          ENDIF
  502     CONTINUE
  501    CONTINUE
-        CQP(1) =  QU *(AUP + FRCH*FUPI  *  2D0/3D0 )
-     &  - HPOLAR*DQU *(GUP + GRCH*GUPI  *  2D0/3D0 )
-        CQP(2) =  QBU*(AUM + FRCH*FUPIB *(-2D0/3D0)) 
-     &  - HPOLAR*DQBU*(GUM + GRCH*GUPIB *(-2D0/3D0)) + CQP(1)
-        CQP(3) =  QD *(ADP + FRCH*FDOI  *(-1D0/3D0))
-     &  - HPOLAR*DQD *(GDP + GRCH*GDOI  *(-1D0/3D0)) + CQP(2)
-        CQP(4) =  QBD*(ADM + FRCH*FDOIB *  1D0/3D0 )
-     &  - HPOLAR*DQBD*(GDM + GRCH*GDOIB *  1D0/3D0 ) + CQP(3)
-        CQP(5) =  QS *(ADP + FRCH*FDOI  *(-1D0/3D0))
-     &  - HPOLAR*DQS *(GDP + GRCH*GDOI  *(-1D0/3D0)) + CQP(4)
-        CQP(6) =  QBS*(ADM + FRCH*FDOIB *  1D0/3D0 )
-     &  - HPOLAR*DQBS*(GDM + GRCH*GDOIB *  1D0/3D0 ) + CQP(5)
-        CQP(7) =  QC *(AUP + FRCH*FUPI  *  2D0/3D0 )
-     &  - HPOLAR*DQC *(GUP + GRCH*GUPI  *  2D0/3D0 ) + CQP(6)
-        CQP(8) =  QBC*(AUM + FRCH*FUPIB *(-2D0/3D0))
-     &  - HPOLAR*DQBC*(GUM + GRCH*GUPIB *(-2D0/3D0)) + CQP(7)
-        CQP(9) =  QB *(ADP + FRCH*FDOI  *(-1D0/3D0))
-     &  - HPOLAR*DQB *(GDP + GRCH*GDOI  *(-1D0/3D0)) + CQP(8)
-        CQP(10) = QBB*(ADM + FRCH*FDOIB *  1D0/3D0 )
-     &  - HPOLAR*DQBB*(GDM + GRCH*GDOIB *  1D0/3D0 ) + CQP(9)
-        CQP(11) = QT *(AUP + FRCH*FUPI  *  2D0/3D0 )
-     &  - HPOLAR*DQT *(GUP + GRCH*GUPI  *  2D0/3D0 ) + CQP(10)
-        CQP(12) = QBT*(AUM + FRCH*FUPIB *(-2D0/3D0))
-     &  - HPOLAR*DQBT*(GUM + GRCH*GUPIB *(-2D0/3D0)) + CQP(11)
+c        FUPI=FUPI*FRCH
+c        FDOI=FDOI*FRCH
+c        FUPIB=FUPIB*FRCH
+c        FDOIB=FDOIB*FRCH
+c        GUPI=GUPI*GRCH
+c        GDOI=GDOI*GRCH
+c        GUPIB=GUPIB*GRCH
+c        GDOIB=GDOIB*GRCH
+
+        FUPI=CHNULL*(FUPI0*FRCH0+FUPIC*FRCHC)
+     &      +DFLOAT(LLEPT)*(FUPI0*FRCHC+FUPIC*FRCH0)
+        FDOI=CHNULL*(FDOI0*FRCH0+FDOIC*FRCHC)
+     &      +DFLOAT(LLEPT)*(FDOI0*FRCHC+FDOIC*FRCH0)
+        FUPIB=CHNULL*(FUPIB0*FRCH0+FUPIBC*FRCHC)
+     &       +DFLOAT(LLEPT)*(FUPIB0*FRCHC+FUPIBC*FRCH0)
+        FDOIB=CHNULL*(FDOIB0*FRCH0+FDOIBC*FRCHC)
+     &       +DFLOAT(LLEPT)*(FDOIB0*FRCHC+FDOIBC*FRCH0)
+        GUPI=CHNULL*(GUPI0*GRCH0+GUPIC*GRCHC)
+     &      +DFLOAT(LLEPT)*(GUPI0*GRCHC+GUPIC*GRCH0)
+        GDOI=CHNULL*(GDOI0*GRCH0+GDOIC*GRCHC)
+     &      +DFLOAT(LLEPT)*(GDOI0*GRCHC+GDOIC*GRCH0)
+        GUPIB=CHNULL*(GUPIB0*GRCH0+GUPIBC*GRCHC)
+     &       +DFLOAT(LLEPT)*(GUPIB0*GRCHC+GUPIBC*GRCH0)
+        GDOIB=CHNULL*(GDOIB0*GRCH0+GDOIBC*GRCHC)
+     &       +DFLOAT(LLEPT)*(GDOIB0*GRCHC+GDOIBC*GRCH0)
+        
+        CQP(1) =  QU *(AUP + FUPI  *  2D0/3D0 )
+     &  - HPOLAR*DQU *(GUP + GUPI  *  2D0/3D0 )
+        CQP(2) =  QBU*(AUM + FUPIB *(-2D0/3D0)) 
+     &  - HPOLAR*DQBU*(GUM + GUPIB *(-2D0/3D0)) + CQP(1)
+        CQP(3) =  QD *(ADP + FDOI  *(-1D0/3D0))
+     &  - HPOLAR*DQD *(GDP + GDOI  *(-1D0/3D0)) + CQP(2)
+        CQP(4) =  QBD*(ADM + FDOIB *  1D0/3D0 )
+     &  - HPOLAR*DQBD*(GDM + GDOIB *  1D0/3D0 ) + CQP(3)
+        CQP(5) =  QS *(ADP + FDOI  *(-1D0/3D0))
+     &  - HPOLAR*DQS *(GDP + GDOI  *(-1D0/3D0)) + CQP(4)
+        CQP(6) =  QBS*(ADM + FDOIB *  1D0/3D0 )
+     &  - HPOLAR*DQBS*(GDM + GDOIB *  1D0/3D0 ) + CQP(5)
+        CQP(7) =  QC *(AUP + FUPI  *  2D0/3D0 )
+     &  - HPOLAR*DQC *(GUP + GUPI  *  2D0/3D0 ) + CQP(6)
+        CQP(8) =  QBC*(AUM + FUPIB *(-2D0/3D0))
+     &  - HPOLAR*DQBC*(GUM + GUPIB *(-2D0/3D0)) + CQP(7)
+        CQP(9) =  QB *(ADP + FDOI  *(-1D0/3D0))
+     &  - HPOLAR*DQB *(GDP + GDOI  *(-1D0/3D0)) + CQP(8)
+        CQP(10) = QBB*(ADM + FDOIB *  1D0/3D0 )
+     &  - HPOLAR*DQBB*(GDM + GDOIB *  1D0/3D0 ) + CQP(9)
+        CQP(11) = QT *(AUP + FUPI  *  2D0/3D0 )
+     &  - HPOLAR*DQT *(GUP + GUPI  *  2D0/3D0 ) + CQP(10)
+        CQP(12) = QBT*(AUM + FUPIB *(-2D0/3D0))
+     &  - HPOLAR*DQBT*(GUM + GUPIB *(-2D0/3D0)) + CQP(11)
         SUMME=CQP(12)
       ELSEIF (IPDFOP.GE.2) THEN
 C..................................PARTON DISTRIBUTION FUNCTIONS
@@ -7966,14 +8165,18 @@ C                                  INCLUDING F_L
         ADM=0D0
         DO 521 IB1=1,2
          DO 522 IB2=1,2
-           AUP=(AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)+BFIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUP
-           AUM=(AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)-BFIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUM
-           ADP=(AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)+BFIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADP
-           ADM=(AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)-BFIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADM
+            AUP=(CHNULL*AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &           +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3)
+     &         /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUP
+            AUM=(CHNULL*AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &           -DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3)
+     &         /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUM
+            ADP=(CHNULL*AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &           +DFLOAT(LLEPT)*BFIJ(3,IB1,IB2)*R3)
+     &         /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADP
+            ADM=(CHNULL*AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &           -DFLOAT(LLEPT)*BFIJ(3,IB1,IB2)*R3)
+     &         /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADM
  522     CONTINUE
  521    CONTINUE
         CQP(1) =  QU *AUP
@@ -7991,9 +8194,10 @@ C                                  INCLUDING F_L
         SUMME=0D0
         DO 531 IB1=1,2
          DO 532 IB2=1,2
-          SUMME=SUMME+F1(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2)
-     &                +F2(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
-     &                +F3(IB1,IB2)*R3*RUNALP(IB1)*RUNALP(IB2)
+            SUMME=SUMME
+     &     +F1(IB1,IB2)*CHNULL*R1*RUNALP(IB1)*RUNALP(IB2)
+     &     +F2(IB1,IB2)*CHNULL*R2*RUNALP(IB1)*RUNALP(IB2)
+     &     +F3(IB1,IB2)*DFLOAT(LLEPT)*R3*RUNALP(IB1)*RUNALP(IB2)
  532     CONTINUE
  531    CONTINUE
         RNORM=SUMME/CQP(12)
@@ -8209,6 +8413,7 @@ C
       COMMON /HSDPDF/ DQU,DQBU,DQD,DQBD,DQS,DQBS,DQC,DQBC,DQB,DQBB,
      *                DQT,DQBT
       COMMON /HSPARM/ POLARI,HPOLAR,LLEPT,LQUA
+      COMMON /HSASY0/ PONULL,CHNULL,ICPASY
       COMMON /HSNUCL/ HNA,HNZ,INUMOD
       COMMON /HSGIKP/ GS,GU,GX,TP,UP
       COMMON /HSFIJK/ F1(2,2),F2(2,2),F3(2,2)
@@ -8349,7 +8554,7 @@ C
       ELSE
         SU1=S*S+SS*SS+U*U+US*US
         SU2=(S-U)*(S+U)+(SS-US)*(SS+US)
-        PROPI1=-LLEPT/8D0/XS
+        PROPI1=-1D0/8D0/XS
      &       * (SS/DKPS/DKQS + S/DKP/DKQ + U/DKPS/DKQ + US/DKP/DKQS)
       ENDIF
 
@@ -8386,7 +8591,7 @@ C
      &     +FAC5/(A1*A1+TS*TS)/TS/TS
      &     +FAC6/(A2*A2+TS*TS)/TS/TS)
       FK1=-2D0*MEI2*(GS-GU)
-      R3= -DFLOAT(LLEPT)*4D0*(
+      R3= -4D0*(
      &     +FK1/(A1+A2-TS)*(1D0/(A1-TS)+1D0/(A2-TS))/TS
      &     +(GX/2D0-GS)/(A1-TS)/TS
      &     +(GX/2D0-GU)/(A2-TS)/TS
@@ -8406,12 +8611,14 @@ C..................................STRUCTURE FUNCTIONS
          CALL HSSTRF(XS,-TS)
          DO 10 IB1=1,2
           DO 11 IB2=1,2
-           CQP(12)=CQP(12)+F1(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2)
-     &                    +F2(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
-     &                    +F3(IB1,IB2)*R3*RUNALP(IB1)*RUNALP(IB2)
-     &            -HPOLAR*(G1(IB1,IB2)*R3*2D0*RUNALP(IB1)*RUNALP(IB2)
-     &                    +G4(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
-     &                    +G3(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2))
+             CQP(12)=CQP(12)
+     &         +CHNULL*F1(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2)
+     &         +CHNULL*F2(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
+     &         +F3(IB1,IB2)*DFLOAT(LLEPT)*R3*RUNALP(IB1)*RUNALP(IB2)
+     &       -HPOLAR*(
+     &         +G1(IB1,IB2)*DFLOAT(LLEPT)*R3*2D0*RUNALP(IB1)*RUNALP(IB2)
+     &         +CHNULL*G4(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
+     &         +CHNULL*G3(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2))
  11     CONTINUE
  10     CONTINUE
         SUMME = CQP(12)
@@ -8430,14 +8637,30 @@ C..................................PARTON DENSITIES
         GUM=0D0
         GDP=0D0
         GDM=0D0
-        FUPI = 0D0
-        FDOI = 0D0
-        FUPIB =0D0
-        FDOIB =0D0
-        GUPI = 0D0
-        GDOI = 0D0
-        GUPIB =0D0
-        GDOIB =0D0
+c        FUPI = 0D0
+c        FDOI = 0D0
+c        FUPIB =0D0
+c        FDOIB =0D0
+c        GUPI = 0D0
+c        GDOI = 0D0
+c        GUPIB =0D0
+c        GDOIB =0D0
+        FUPI0 = 0D0
+        FDOI0 = 0D0
+        FUPIB0 =0D0
+        FDOIB0 =0D0
+        GUPI0 = 0D0
+        GDOI0 = 0D0
+        GUPIB0 =0D0
+        GDOIB0 =0D0
+        FUPIC = 0D0
+        FDOIC = 0D0
+        FUPIBC =0D0
+        FDOIBC =0D0
+        GUPIC = 0D0
+        GDOIC = 0D0
+        GUPIBC =0D0
+        GDOIBC =0D0
         IF(LPAR(14).NE.0)THEN
           SU3 = (S*S+U*U)/2D0
           SU4 = (S-U)*(S+U)/2D0
@@ -8464,8 +8687,7 @@ C..................................PARTON DENSITIES
      &       -2D0*MPRO2*(1D0/TS/TS+1D0/A1/A2)
      &       +MPRO2/TS*(1D0/A1-1D0/A2) )
           RBLEP =
-     &     -DFLOAT(LLEPT)*(
-     &       (GS-GU)/A1/A2
+     &      -((GS-GU)/A1/A2
      &       -2D0*MEI2*(GS-GU)/A1/A2/TS
      &       +(GX/2D0-GS)/A1/TS
      &       +(GX/2D0-GU)/A2/TS
@@ -8476,9 +8698,17 @@ C..................................PARTON DENSITIES
           PLEP=0D0
           PHAD=0D0
           PFRCH=0D0
+          PFRCH0=0D0
+          PFRCHC=0D0
+          GLEP=0D0
+          GHAD=0D0
+          GFRCH=0D0
+          GFRCH0=0D0
+          GFRCHC=0D0
           DO 511 IB1=1,2
             DO 512 IB2=1,2
-              PLEP=(AFIJ(2,IB1,IB2)*RALEP+BFIJ(2,IB1,IB2)*RBLEP)
+              PLEP=(AFIJ(2,IB1,IB2)*RALEP
+     &               +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*RBLEP)
      &            *DSBOS(IB1)*DSBOS(IB2) + PLEP
               PHAD =((AFIJ(2,IB1,IB2)*SU1
      &               -BFIJ(2,IB1,IB2)*SU2*LLEPT)*PPHA1
@@ -8487,10 +8717,15 @@ C..................................PARTON DENSITIES
      &              +(AFIJ(2,IB1,IB2)*SU5
      &               -BFIJ(2,IB1,IB2)*SU6*LLEPT)*PPHA3)
      &             *DBOS(IB1)*DBOS(IB2)/T/T*4D0/9D0/XS/8D0 + PHAD
-              PFRCH=(AFIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
-     &              +BFIJ(2,IB1,IB2)*R3/4D0)
-     &             *DSBOS(IB1)*DSBOS(IB2) + PFRCH
-              GLEP=(AGIJ(2,IB1,IB2)*RALEP+BGIJ(2,IB1,IB2)*RBLEP)
+c              PFRCH=(AFIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
+c     &              +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3/4D0)
+c     &             *DSBOS(IB1)*DSBOS(IB2) + PFRCH
+              PFRCH0=AFIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
+     &               *DSBOS(IB1)*DSBOS(IB2) + PFRCH0
+              PFRCHC=+BFIJ(2,IB1,IB2)*R3/4D0
+     &                *DSBOS(IB1)*DSBOS(IB2) + PFRCHC
+              GLEP=(AGIJ(2,IB1,IB2)*RALEP
+     &              +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*RBLEP)
      &            *DSBOS(IB1)*DSBOS(IB2) + GLEP
               GHAD =((AGIJ(2,IB1,IB2)*SU1
      &               -BGIJ(2,IB1,IB2)*SU2*LLEPT)*PPHA1
@@ -8499,84 +8734,148 @@ C..................................PARTON DENSITIES
      &              +(AGIJ(2,IB1,IB2)*SU5
      &               -BGIJ(2,IB1,IB2)*SU6*LLEPT)*PPHA3)
      &             *DBOS(IB1)*DBOS(IB2)/T/T*4D0/9D0/XS/8D0 + GHAD
-              GFRCH=(AGIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
-     &              +BGIJ(2,IB1,IB2)*R3/4D0)
-     &             *DSBOS(IB1)*DSBOS(IB2) + GFRCH
+c              GFRCH=(AGIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
+c     &              +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*R3/4D0)
+c     &             *DSBOS(IB1)*DSBOS(IB2) + GFRCH
+              GFRCH0=AGIJ(2,IB1,IB2)*(R1/8D0+R2/4D0*XS)
+     &               *DSBOS(IB1)*DSBOS(IB2) + GFRCH0
+              GFRCHC=+BGIJ(2,IB1,IB2)*R3/4D0
+     &                *DSBOS(IB1)*DSBOS(IB2) + GFRCHC
  512        CONTINUE
  511      CONTINUE
           SUTOT=PHAD+PLEP
-          FRCH=PFRCH/SUTOT
+c          FRCH=PFRCH/SUTOT
+          FRCH0=PFRCH0/SUTOT
+          FRCHC=PFRCHC/SUTOT
           SGTOT=GHAD+GLEP
-          GRCH=GFRCH/SGTOT
+c          GRCH=GFRCH/SGTOT
+          GRCH0=GFRCH0/SGTOT
+          GRCHC=GFRCHC/SGTOT
         ELSE
-          FRCH=0D0
-          GRCH=0D0
+c          FRCH=0D0
+          FRCH0=0D0
+          FRCHC=0D0
+c          GRCH=0D0
+          GRCH0=0D0
+          GRCHC=0D0
         ENDIF
         DO 501 IB1=1,2
          DO 502 IB2=1,2
           IF(LPAR(12).NE.0)THEN
-           AUP=(AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)+BFIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUP
-           AUM=(AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)-BFIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUM
-           ADP=(AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)+BFIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADP
-           ADM=(AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)-BFIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADM
-           GUP=(AGIJ(2,IB1,IB2)*(R1/2D0+R2*XS)+BGIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + GUP
-           GUM=(-AGIJ(2,IB1,IB2)*(R1/2D0+R2*XS)+BGIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + GUM
-           GDP=(AGIJ(3,IB1,IB2)*(R1/2D0+R2*XS)+BGIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + GDP
-           GDM=(-AGIJ(3,IB1,IB2)*(R1/2D0+R2*XS)+BGIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + GDM
+             AUP=(CHNULL*AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUP
+             AUM=(CHNULL*AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &            -DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUM
+             ADP=(CHNULL*AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BFIJ(3,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADP
+             ADM=(CHNULL*AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &            -DFLOAT(LLEPT)*BFIJ(3,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADM
+             GUP=(CHNULL*AGIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + GUP
+             GUM=(-CHNULL*AGIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + GUM
+             GDP=(CHNULL*AGIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BGIJ(3,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + GDP
+             GDM=(-CHNULL*AGIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &            +DFLOAT(LLEPT)*BGIJ(3,IB1,IB2)*R3)
+     &          /4D0*DSBOS(IB1)*DSBOS(IB2)  + GDM
           ENDIF
          IF(LPAR(14).NE.0)THEN
           PROPI2 = DBOS(IB1)*DSBOS(IB2)/T/TS
-          AB12UP = AFIJ(2,IB1,IB2)*SU1 - BFIJ(2,IB1,IB2)*SU2*LLEPT
-          AB12UM = AFIJ(2,IB1,IB2)*SU1 + BFIJ(2,IB1,IB2)*SU2*LLEPT
-          AB12DP = AFIJ(3,IB1,IB2)*SU1 - BFIJ(3,IB1,IB2)*SU2*LLEPT
-          AB12DM = AFIJ(3,IB1,IB2)*SU1 + BFIJ(3,IB1,IB2)*SU2*LLEPT
-          GB12UP = AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
-          GB12UM = - AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
-          GB12DP = AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
-          GB12DM = - AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
-          FUPI = AB12UP*PROPI1 * PROPI2                   + FUPI
-          FDOI = AB12DP*PROPI1 * PROPI2                   + FDOI
-          FUPIB =AB12UM*PROPI1 * PROPI2                   + FUPIB
-          FDOIB =AB12DM*PROPI1 * PROPI2                   + FDOIB
-          GUPI = GB12UP*PROPI1 * PROPI2                   + GUPI
-          GDOI = GB12DP*PROPI1 * PROPI2                   + GDOI
-          GUPIB =GB12UM*PROPI1 * PROPI2                   + GUPIB
-          GDOIB =GB12DM*PROPI1 * PROPI2                   + GDOIB
+c          AB12UP = AFIJ(2,IB1,IB2)*SU1 - BFIJ(2,IB1,IB2)*SU2*LLEPT
+c          AB12UM = AFIJ(2,IB1,IB2)*SU1 + BFIJ(2,IB1,IB2)*SU2*LLEPT
+c          AB12DP = AFIJ(3,IB1,IB2)*SU1 - BFIJ(3,IB1,IB2)*SU2*LLEPT
+c          AB12DM = AFIJ(3,IB1,IB2)*SU1 + BFIJ(3,IB1,IB2)*SU2*LLEPT
+c          GB12UP = AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
+c          GB12UM = - AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
+c          GB12DP = AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
+c          GB12DM = - AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
+c          FUPI = AB12UP*PROPI1*DFLOAT(LLEPT) * PROPI2     + FUPI
+c          FDOI = AB12DP*PROPI1*DFLOAT(LLEPT) * PROPI2     + FDOI
+c          FUPIB =AB12UM*PROPI1*DFLOAT(LLEPT) * PROPI2     + FUPIB
+c          FDOIB =AB12DM*PROPI1*DFLOAT(LLEPT) * PROPI2     + FDOIB
+c          GUPI = GB12UP*PROPI1*DFLOAT(LLEPT) * PROPI2     + GUPI
+c          GDOI = GB12DP*PROPI1*DFLOAT(LLEPT) * PROPI2     + GDOI
+c          GUPIB =GB12UM*PROPI1*DFLOAT(LLEPT) * PROPI2     + GUPIB
+c          GDOIB =GB12DM*PROPI1*DFLOAT(LLEPT) * PROPI2     + GDOIB
+c          if (icpasy.eq.2) then
+          FUPI0 = - BFIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + FUPI0
+          FDOI0 = - BFIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + FDOI0
+          FUPIB0 =+ BFIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + FUPIB0
+          FDOIB0 =+ BFIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + FDOIB0
+          GUPI0 = - BGIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + GUPI0
+          GDOI0 = - BGIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + GDOI0
+          GUPIB0 =- BGIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + GUPIB0
+          GDOIB0 =- BGIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + GDOIB0
+          FUPIC = AFIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + FUPIC
+          FDOIC = AFIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + FDOIC
+          FUPIBC =AFIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + FUPIBC
+          FDOIBC =AFIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + FDOIBC
+          GUPIC = AGIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + GUPIC
+          GDOIC = AGIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + GDOIC
+          GUPIBC =- AGIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + GUPIBC
+          GDOIBC =- AGIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + GDOIBC
+c          endif
          ENDIF
  502     CONTINUE
- 501     CONTINUE
-        CQP(1) =  QU *(AUP + FRCH*FUPI  *  2D0/3D0 )
-     &  - HPOLAR*DQU *(GUP + GRCH*GUPI  *  2D0/3D0 )
-        CQP(2) =  QBU*(AUM + FRCH*FUPIB *(-2D0/3D0)) 
-     &  - HPOLAR*DQBU*(GUM + GRCH*GUPIB *(-2D0/3D0)) + CQP(1)
-        CQP(3) =  QD *(ADP + FRCH*FDOI  *(-1D0/3D0))
-     &  - HPOLAR*DQD *(GDP + GRCH*GDOI  *(-1D0/3D0)) + CQP(2)
-        CQP(4) =  QBD*(ADM + FRCH*FDOIB *  1D0/3D0 )
-     &  - HPOLAR*DQBD*(GDM + GRCH*GDOIB *  1D0/3D0 ) + CQP(3)
-        CQP(5) =  QS *(ADP + FRCH*FDOI  *(-1D0/3D0))
-     &  - HPOLAR*DQS *(GDP + GRCH*GDOI  *(-1D0/3D0)) + CQP(4)
-        CQP(6) =  QBS*(ADM + FRCH*FDOIB *  1D0/3D0 )
-     &  - HPOLAR*DQBS*(GDM + GRCH*GDOIB *  1D0/3D0 ) + CQP(5)
-        CQP(7) =  QC *(AUP + FRCH*FUPI  *  2D0/3D0 )
-     &  - HPOLAR*DQC *(GUP + GRCH*GUPI  *  2D0/3D0 ) + CQP(6)
-        CQP(8) =  QBC*(AUM + FRCH*FUPIB *(-2D0/3D0))
-     &  - HPOLAR*DQBC*(GUM + GRCH*GUPIB *(-2D0/3D0)) + CQP(7)
-        CQP(9) =  QB *(ADP + FRCH*FDOI  *(-1D0/3D0))
-     &  - HPOLAR*DQB *(GDP + GRCH*GDOI  *(-1D0/3D0)) + CQP(8)
-        CQP(10) = QBB*(ADM + FRCH*FDOIB *  1D0/3D0 )
-     &  - HPOLAR*DQBB*(GDM + GRCH*GDOIB *  1D0/3D0 ) + CQP(9)
-        CQP(11) = QT *(AUP + FRCH*FUPI  *  2D0/3D0 )
-     &  - HPOLAR*DQT *(GUP + GRCH*GUPI  *  2D0/3D0 ) + CQP(10)
-        CQP(12) = QBT*(AUM + FRCH*FUPIB *(-2D0/3D0))
-     &  - HPOLAR*DQBT*(GUM + GRCH*GUPIB *(-2D0/3D0)) + CQP(11)
+ 501    CONTINUE
+c        FUPI=FUPI*FRCH
+c        FDOI=FDOI*FRCH
+c        FUPIB=FUPIB*FRCH
+c        FDOIB=FDOIB*FRCH
+c        GUPI=GUPI*GRCH
+c        GDOI=GDOI*GRCH
+c        GUPIB=GUPIB*GRCH
+c        GDOIB=GDOIB*GRCH
+
+        FUPI=CHNULL*(FUPI0*FRCH0+FUPIC*FRCHC)
+     &      +DFLOAT(LLEPT)*(FUPI0*FRCHC+FUPIC*FRCH0)
+        FDOI=CHNULL*(FDOI0*FRCH0+FDOIC*FRCHC)
+     &      +DFLOAT(LLEPT)*(FDOI0*FRCHC+FDOIC*FRCH0)
+        FUPIB=CHNULL*(FUPIB0*FRCH0+FUPIBC*FRCHC)
+     &       +DFLOAT(LLEPT)*(FUPIB0*FRCHC+FUPIBC*FRCH0)
+        FDOIB=CHNULL*(FDOIB0*FRCH0+FDOIBC*FRCHC)
+     &       +DFLOAT(LLEPT)*(FDOIB0*FRCHC+FDOIBC*FRCH0)
+        GUPI=CHNULL*(GUPI0*GRCH0+GUPIC*GRCHC)
+     &      +DFLOAT(LLEPT)*(GUPI0*GRCHC+GUPIC*GRCH0)
+        GDOI=CHNULL*(GDOI0*GRCH0+GDOIC*GRCHC)
+     &      +DFLOAT(LLEPT)*(GDOI0*GRCHC+GDOIC*GRCH0)
+        GUPIB=CHNULL*(GUPIB0*GRCH0+GUPIBC*GRCHC)
+     &       +DFLOAT(LLEPT)*(GUPIB0*GRCHC+GUPIBC*GRCH0)
+        GDOIB=CHNULL*(GDOIB0*GRCH0+GDOIBC*GRCHC)
+     &       +DFLOAT(LLEPT)*(GDOIB0*GRCHC+GDOIBC*GRCH0)
+
+        CQP(1) =  QU *(AUP + FUPI  *  2D0/3D0 )
+     &  - HPOLAR*DQU *(GUP + GUPI  *  2D0/3D0 )
+        CQP(2) =  QBU*(AUM + FUPIB *(-2D0/3D0)) 
+     &  - HPOLAR*DQBU*(GUM + GUPIB *(-2D0/3D0)) + CQP(1)
+        CQP(3) =  QD *(ADP + FDOI  *(-1D0/3D0))
+     &  - HPOLAR*DQD *(GDP + GDOI  *(-1D0/3D0)) + CQP(2)
+        CQP(4) =  QBD*(ADM + FDOIB *  1D0/3D0 )
+     &  - HPOLAR*DQBD*(GDM + GDOIB *  1D0/3D0 ) + CQP(3)
+        CQP(5) =  QS *(ADP + FDOI  *(-1D0/3D0))
+     &  - HPOLAR*DQS *(GDP + GDOI  *(-1D0/3D0)) + CQP(4)
+        CQP(6) =  QBS*(ADM + FDOIB *  1D0/3D0 )
+     &  - HPOLAR*DQBS*(GDM + GDOIB *  1D0/3D0 ) + CQP(5)
+        CQP(7) =  QC *(AUP + FUPI  *  2D0/3D0 )
+     &  - HPOLAR*DQC *(GUP + GUPI  *  2D0/3D0 ) + CQP(6)
+        CQP(8) =  QBC*(AUM + FUPIB *(-2D0/3D0))
+     &  - HPOLAR*DQBC*(GUM + GUPIB *(-2D0/3D0)) + CQP(7)
+        CQP(9) =  QB *(ADP + FDOI  *(-1D0/3D0))
+     &  - HPOLAR*DQB *(GDP + GDOI  *(-1D0/3D0)) + CQP(8)
+        CQP(10) = QBB*(ADM + FDOIB *  1D0/3D0 )
+     &  - HPOLAR*DQBB*(GDM + GDOIB *  1D0/3D0 ) + CQP(9)
+        CQP(11) = QT *(AUP + FUPI  *  2D0/3D0 )
+     &  - HPOLAR*DQT *(GUP + GUPI  *  2D0/3D0 ) + CQP(10)
+        CQP(12) = QBT*(AUM + FUPIB *(-2D0/3D0))
+     &  - HPOLAR*DQBT*(GUM + GUPIB *(-2D0/3D0)) + CQP(11)
         SUMME = CQP(12)
       ELSEIF (IPDFOP.GE.2) THEN
 C..................................PARTON DISTRIBUTION FUNCTIONS
@@ -8588,14 +8887,18 @@ C                                  INCLUDING F_L
         ADM=0D0
         DO 521 IB1=1,2
          DO 522 IB2=1,2
-           AUP=(AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)+BFIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUP
-           AUM=(AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)-BFIJ(2,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUM
-           ADP=(AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)+BFIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADP
-           ADM=(AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)-BFIJ(3,IB1,IB2)*R3)
-     &                   /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADM
+            AUP=(CHNULL*AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &           +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3)
+     &         /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUP
+            AUM=(CHNULL*AFIJ(2,IB1,IB2)*(R1/2D0+R2*XS)
+     &           -DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*R3)
+     &         /4D0*DSBOS(IB1)*DSBOS(IB2)  + AUM
+            ADP=(CHNULL*AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &           +DFLOAT(LLEPT)*BFIJ(3,IB1,IB2)*R3)
+     &         /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADP
+            ADM=(CHNULL*AFIJ(3,IB1,IB2)*(R1/2D0+R2*XS)
+     &           -DFLOAT(LLEPT)*BFIJ(3,IB1,IB2)*R3)
+     &         /4D0*DSBOS(IB1)*DSBOS(IB2)  + ADM
  522    CONTINUE
  521  CONTINUE
         CQP(1) =  QU *AUP
@@ -8613,9 +8916,10 @@ C                                  INCLUDING F_L
         SUMME=0D0
         DO 531 IB1=1,2
          DO 532 IB2=1,2
-          SUMME=SUMME+F1(IB1,IB2)*R1*RUNALP(IB1)*RUNALP(IB2)
-     &                +F2(IB1,IB2)*R2*RUNALP(IB1)*RUNALP(IB2)
-     &                +F3(IB1,IB2)*R3*RUNALP(IB1)*RUNALP(IB2)
+            SUMME=SUMME
+     &      +F1(IB1,IB2)*CHNULL*R1*RUNALP(IB1)*RUNALP(IB2)
+     &      +F2(IB1,IB2)*CHNULL*R2*RUNALP(IB1)*RUNALP(IB2)
+     &      +F3(IB1,IB2)*DFLOAT(LLEPT)*R3*RUNALP(IB1)*RUNALP(IB2)
  532     CONTINUE
  531    CONTINUE
         RNORM=SUMME/CQP(12)
@@ -8842,6 +9146,7 @@ C
      *                DQT,DQBT
       COMMON /HSNUCL/ HNA,HNZ,INUMOD
       COMMON /HSPARM/ POLARI,HPOLAR,LLEPT,LQUA
+      COMMON /HSASY0/ PONULL,CHNULL,ICPASY
       COMMON /HSGIKP/ GS,GU,GX,TP,UP
       COMMON /HSFIJK/ F1(2,2),F2(2,2),F3(2,2)
       COMMON /HSPSPC/ IPHSPC
@@ -9001,8 +9306,8 @@ C---SUBTRACTION OF FINAL STATE MASS SINGULARITY
       IF(LPAR(14).EQ.0)THEN
         PROPI1=0D0
       ELSE
-        PROPI1= - LLEPT
-     &       * (SS/DKPS/DKQS + S/DKP/DKQ + U/DKPS/DKQ + US/DKP/DKQS)
+        PROPI1= 
+     &       - (SS/DKPS/DKQS + S/DKP/DKQ + U/DKPS/DKQ + US/DKP/DKQS)
       ENDIF
       DO 1 IFL=1,12
         CQP(IFL) = 0D0
@@ -9015,14 +9320,30 @@ C---SUBTRACTION OF FINAL STATE MASS SINGULARITY
       GDO = 0D0
       GUPB =0D0
       GDOB =0D0
-      FUPI = 0D0
-      FDOI = 0D0
-      FUPIB =0D0
-      FDOIB =0D0
-      GUPI = 0D0
-      GDOI = 0D0
-      GUPIB =0D0
-      GDOIB =0D0
+c      FUPI = 0D0
+c      FDOI = 0D0
+c      FUPIB =0D0
+c      FDOIB =0D0
+c      GUPI = 0D0
+c      GDOI = 0D0
+c      GUPIB =0D0
+c      GDOIB =0D0
+      FUPI0 = 0D0
+      FDOI0 = 0D0
+      FUPIB0 =0D0
+      FDOIB0 =0D0
+      GUPI0 = 0D0
+      GDOI0 = 0D0
+      GUPIB0 =0D0
+      GDOIB0 =0D0
+      FUPIC = 0D0
+      FDOIC = 0D0
+      FUPIBC =0D0
+      FDOIBC =0D0
+      GUPIC = 0D0
+      GDOIC = 0D0
+      GUPIBC =0D0
+      GDOIBC =0D0
       IF(LPAR(14).NE.0)THEN
           RALEP = 8D0*XS*(
      &     GX/2D0*(
@@ -9041,8 +9362,7 @@ C---SUBTRACTION OF FINAL STATE MASS SINGULARITY
      &    -2D0*MEI2*MPRO2/TS*(1D0/A1/A1+1D0/A2/A2)
      &    -2D0*MPRO2*(1D0/TS/TS+1D0/A1/A2)
      &    +MPRO2/TS*(1D0/A1-1D0/A2) ))
-          RBLEP = 8D0*XS*(
-     &    -DFLOAT(LLEPT)*(
+          RBLEP = -8D0*XS*(
      &     (GS-GU)/A1/A2
      &     -2D0*MEI2*(GS-GU)/A1/A2/TS
      &     +(GX/2D0-GS)/A1/TS
@@ -9050,62 +9370,92 @@ C---SUBTRACTION OF FINAL STATE MASS SINGULARITY
      &     +GX*T/2D0/A1/TS/TS
      &     +GX*T/2D0/A2/TS/TS
      &     +(GX-2D0*GU)*MEI2/A1/A1/TS
-     &     +(2D0*GS-GX)*MEI2/A2/A2/TS))
+     &     +(2D0*GS-GX)*MEI2/A2/A2/TS)
            PLEP=0D0
            PHAD=0D0
+           PHAD0=0D0
+           PHADC=0D0
            GLEP=0D0
            GHAD=0D0
+           GHAD0=0D0
+           GHADC=0D0
       DO 511 IB1=1,2
        DO 512 IB2=1,2
-         PLEP=(AFIJ(2,IB1,IB2)*RALEP+BFIJ(2,IB1,IB2)*RBLEP)
+         PLEP=(AFIJ(2,IB1,IB2)*RALEP
+     &          +DFLOAT(LLEPT)*BFIJ(2,IB1,IB2)*RBLEP)
      &                *DSBOS(IB1)*DSBOS(IB2)*TS*TS  + PLEP
          PHAD =((AFIJ(2,IB1,IB2)*SU1 - BFIJ(2,IB1,IB2)*SU2*LLEPT)*PROP1
      &         +(AFIJ(2,IB1,IB2)*SU3 - BFIJ(2,IB1,IB2)*SU4*LLEPT)*PROP2
      &         +(AFIJ(2,IB1,IB2)*SU5 - BFIJ(2,IB1,IB2)*SU6*LLEPT)*PROP3)
-     &         *DBOS(IB1)*DBOS(IB2)*4D0/9D0 +PHAD
-         GLEP=(AGIJ(2,IB1,IB2)*RALEP+BGIJ(2,IB1,IB2)*RBLEP)
+     &         *DBOS(IB1)*DBOS(IB2)*4D0/9D0 + PHAD
+         PHAD0=(AFIJ(2,IB1,IB2)*SU1*PROP1
+     &         +AFIJ(2,IB1,IB2)*SU3*PROP2
+     &         +AFIJ(2,IB1,IB2)*SU5*PROP3)
+     &         *DBOS(IB1)*DBOS(IB2)*4D0/9D0 +PHAD0
+         PHADC=(-BFIJ(2,IB1,IB2)*SU2*PROP1
+     &          -BFIJ(2,IB1,IB2)*SU4*PROP2
+     &          -BFIJ(2,IB1,IB2)*SU6*PROP3)
+     &         *DBOS(IB1)*DBOS(IB2)*4D0/9D0 +PHADC
+         GLEP=(AGIJ(2,IB1,IB2)*RALEP
+     &         +DFLOAT(LLEPT)*BGIJ(2,IB1,IB2)*RBLEP)
      &                *DSBOS(IB1)*DSBOS(IB2)*TS*TS  + GLEP
          GHAD =((AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT)*PROP1
      &         +(AGIJ(2,IB1,IB2)*SU3 - BGIJ(2,IB1,IB2)*SU4*LLEPT)*PROP2
      &         +(AGIJ(2,IB1,IB2)*SU5 - BGIJ(2,IB1,IB2)*SU6*LLEPT)*PROP3)
      &         *DBOS(IB1)*DBOS(IB2)*4D0/9D0 + GHAD
+         GHAD0=(AGIJ(2,IB1,IB2)*SU1*PROP1
+     &         +AGIJ(2,IB1,IB2)*SU3*PROP2
+     &         +AGIJ(2,IB1,IB2)*SU5*PROP3)
+     &         *DBOS(IB1)*DBOS(IB2)*4D0/9D0 + GHAD0
+         GHADC=(-BGIJ(2,IB1,IB2)*SU2*PROP1
+     &          -BGIJ(2,IB1,IB2)*SU4*PROP2
+     &          -BGIJ(2,IB1,IB2)*SU6*PROP3)
+     &         *DBOS(IB1)*DBOS(IB2)*4D0/9D0 + GHADC
  512   CONTINUE
  511  CONTINUE
-          SUTOT=PHAD+PLEP
-          FRCH=PHAD/SUTOT
-          SGTOT=GHAD+GLEP
-          GRCH=GHAD/SGTOT
-      ELSE
-        FRCH=0D0
-        GRCH=0D0
+           SUTOT=PHAD+PLEP
+           FRCH=PHAD/SUTOT
+           FRCH0=PHAD0/SUTOT
+           FRCHC=PHADC/SUTOT
+           SGTOT=GHAD+GLEP
+           GRCH=GHAD/SGTOT
+           GRCH0=GHAD0/SGTOT
+           GRCHC=GHADC/SGTOT
+         ELSE
+           FRCH=0D0
+           FRCH0=0D0
+           FRCHC=0D0
+           GRCH=0D0
+           GRCH0=0D0
+           GRCHC=0D0
       ENDIF
       DO 10 IB1 = 1,2
        DO 20 IB2 = 1,2
         PROP = DBOS(IB1)*DBOS(IB2)
-        AB12UP = AFIJ(2,IB1,IB2)*SU1 - BFIJ(2,IB1,IB2)*SU2*LLEPT
-        AB12UM = AFIJ(2,IB1,IB2)*SU1 + BFIJ(2,IB1,IB2)*SU2*LLEPT
-        AB12DP = AFIJ(3,IB1,IB2)*SU1 - BFIJ(3,IB1,IB2)*SU2*LLEPT
-        AB12DM = AFIJ(3,IB1,IB2)*SU1 + BFIJ(3,IB1,IB2)*SU2*LLEPT
-        AB34UP = AFIJ(2,IB1,IB2)*SU3 - BFIJ(2,IB1,IB2)*SU4*LLEPT
-        AB34UM = AFIJ(2,IB1,IB2)*SU3 + BFIJ(2,IB1,IB2)*SU4*LLEPT
-        AB34DP = AFIJ(3,IB1,IB2)*SU3 - BFIJ(3,IB1,IB2)*SU4*LLEPT
-        AB34DM = AFIJ(3,IB1,IB2)*SU3 + BFIJ(3,IB1,IB2)*SU4*LLEPT
-        AB56UP = AFIJ(2,IB1,IB2)*SU5 - BFIJ(2,IB1,IB2)*SU6*LLEPT
-        AB56UM = AFIJ(2,IB1,IB2)*SU5 + BFIJ(2,IB1,IB2)*SU6*LLEPT
-        AB56DP = AFIJ(3,IB1,IB2)*SU5 - BFIJ(3,IB1,IB2)*SU6*LLEPT
-        AB56DM = AFIJ(3,IB1,IB2)*SU5 + BFIJ(3,IB1,IB2)*SU6*LLEPT
-        GB12UP = AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
-        GB12UM = - AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
-        GB12DP = AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
-        GB12DM = - AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
-        GB34UP = AGIJ(2,IB1,IB2)*SU3 - BGIJ(2,IB1,IB2)*SU4*LLEPT
-        GB34UM = - AGIJ(2,IB1,IB2)*SU3 - BGIJ(2,IB1,IB2)*SU4*LLEPT
-        GB34DP = AGIJ(3,IB1,IB2)*SU3 - BGIJ(3,IB1,IB2)*SU4*LLEPT
-        GB34DM = - AGIJ(3,IB1,IB2)*SU3 - BGIJ(3,IB1,IB2)*SU4*LLEPT
-        GB56UP = AGIJ(2,IB1,IB2)*SU5 - BGIJ(2,IB1,IB2)*SU6*LLEPT
-        GB56UM = - AGIJ(2,IB1,IB2)*SU5 - BGIJ(2,IB1,IB2)*SU6*LLEPT
-        GB56DP = AGIJ(3,IB1,IB2)*SU5 - BGIJ(3,IB1,IB2)*SU6*LLEPT
-        GB56DM = - AGIJ(3,IB1,IB2)*SU5 - BGIJ(3,IB1,IB2)*SU6*LLEPT
+        AB12UP=CHNULL*AFIJ(2,IB1,IB2)*SU1 - BFIJ(2,IB1,IB2)*SU2*LLEPT
+        AB12UM=CHNULL*AFIJ(2,IB1,IB2)*SU1 + BFIJ(2,IB1,IB2)*SU2*LLEPT
+        AB12DP=CHNULL*AFIJ(3,IB1,IB2)*SU1 - BFIJ(3,IB1,IB2)*SU2*LLEPT
+        AB12DM=CHNULL*AFIJ(3,IB1,IB2)*SU1 + BFIJ(3,IB1,IB2)*SU2*LLEPT
+        AB34UP=CHNULL*AFIJ(2,IB1,IB2)*SU3 - BFIJ(2,IB1,IB2)*SU4*LLEPT
+        AB34UM=CHNULL*AFIJ(2,IB1,IB2)*SU3 + BFIJ(2,IB1,IB2)*SU4*LLEPT
+        AB34DP=CHNULL*AFIJ(3,IB1,IB2)*SU3 - BFIJ(3,IB1,IB2)*SU4*LLEPT
+        AB34DM=CHNULL*AFIJ(3,IB1,IB2)*SU3 + BFIJ(3,IB1,IB2)*SU4*LLEPT
+        AB56UP=CHNULL*AFIJ(2,IB1,IB2)*SU5 - BFIJ(2,IB1,IB2)*SU6*LLEPT
+        AB56UM=CHNULL*AFIJ(2,IB1,IB2)*SU5 + BFIJ(2,IB1,IB2)*SU6*LLEPT
+        AB56DP=CHNULL*AFIJ(3,IB1,IB2)*SU5 - BFIJ(3,IB1,IB2)*SU6*LLEPT
+        AB56DM=CHNULL*AFIJ(3,IB1,IB2)*SU5 + BFIJ(3,IB1,IB2)*SU6*LLEPT
+        GB12UP=CHNULL*AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
+        GB12UM=-CHNULL*AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
+        GB12DP=CHNULL*AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
+        GB12DM=-CHNULL*AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
+        GB34UP=CHNULL*AGIJ(2,IB1,IB2)*SU3 - BGIJ(2,IB1,IB2)*SU4*LLEPT
+        GB34UM=-CHNULL*AGIJ(2,IB1,IB2)*SU3 - BGIJ(2,IB1,IB2)*SU4*LLEPT
+        GB34DP=CHNULL*AGIJ(3,IB1,IB2)*SU3 - BGIJ(3,IB1,IB2)*SU4*LLEPT
+        GB34DM=-CHNULL*AGIJ(3,IB1,IB2)*SU3 - BGIJ(3,IB1,IB2)*SU4*LLEPT
+        GB56UP=CHNULL*AGIJ(2,IB1,IB2)*SU5 - BGIJ(2,IB1,IB2)*SU6*LLEPT
+        GB56UM=-CHNULL*AGIJ(2,IB1,IB2)*SU5 - BGIJ(2,IB1,IB2)*SU6*LLEPT
+        GB56DP=CHNULL*AGIJ(3,IB1,IB2)*SU5 - BGIJ(3,IB1,IB2)*SU6*LLEPT
+        GB56DM=-CHNULL*AGIJ(3,IB1,IB2)*SU5 - BGIJ(3,IB1,IB2)*SU6*LLEPT
        IF(LPAR(13).NE.0)THEN
         FUP = (AB12UP*PROP1+AB34UP*PROP2+AB56UP*PROP3) * PROP  + FUP
         FDO = (AB12DP*PROP1+AB34DP*PROP2+AB56DP*PROP3) * PROP  + FDO
@@ -9118,42 +9468,91 @@ C---SUBTRACTION OF FINAL STATE MASS SINGULARITY
        ENDIF
         IF(LPAR(14).NE.0)THEN
           PROPI2 = DBOS(IB1)*DSBOS(IB2)
-          FUPI = AB12UP*PROPI1 * PROPI2                   + FUPI
-          FDOI = AB12DP*PROPI1 * PROPI2                   + FDOI
-          FUPIB =AB12UM*PROPI1 * PROPI2                   + FUPIB
-          FDOIB =AB12DM*PROPI1 * PROPI2                   + FDOIB
-          GUPI = GB12UP*PROPI1 * PROPI2                   + GUPI
-          GDOI = GB12DP*PROPI1 * PROPI2                   + GDOI
-          GUPIB =GB12UM*PROPI1 * PROPI2                   + GUPIB
-          GDOIB =GB12DM*PROPI1 * PROPI2                   + GDOIB
+          AB12UP = AFIJ(2,IB1,IB2)*SU1 - BFIJ(2,IB1,IB2)*SU2*LLEPT
+          AB12UM = AFIJ(2,IB1,IB2)*SU1 + BFIJ(2,IB1,IB2)*SU2*LLEPT
+          AB12DP = AFIJ(3,IB1,IB2)*SU1 - BFIJ(3,IB1,IB2)*SU2*LLEPT
+          AB12DM = AFIJ(3,IB1,IB2)*SU1 + BFIJ(3,IB1,IB2)*SU2*LLEPT
+          GB12UP = AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
+          GB12UM = - AGIJ(2,IB1,IB2)*SU1 - BGIJ(2,IB1,IB2)*SU2*LLEPT
+          GB12DP = AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
+          GB12DM = - AGIJ(3,IB1,IB2)*SU1 - BGIJ(3,IB1,IB2)*SU2*LLEPT
+c          FUPI = AB12UP*PROPI1*DFLOAT(LLEPT) * PROPI2     + FUPI
+c          FDOI = AB12DP*PROPI1*DFLOAT(LLEPT) * PROPI2     + FDOI
+c          FUPIB =AB12UM*PROPI1*DFLOAT(LLEPT) * PROPI2     + FUPIB
+c          FDOIB =AB12DM*PROPI1*DFLOAT(LLEPT) * PROPI2     + FDOIB
+c          GUPI = GB12UP*PROPI1*DFLOAT(LLEPT) * PROPI2     + GUPI
+c          GDOI = GB12DP*PROPI1*DFLOAT(LLEPT) * PROPI2     + GDOI
+c          GUPIB =GB12UM*PROPI1*DFLOAT(LLEPT) * PROPI2     + GUPIB
+c          GDOIB =GB12DM*PROPI1*DFLOAT(LLEPT) * PROPI2     + GDOIB
+          FUPI0 = - BFIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + FUPI0
+          FDOI0 = - BFIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + FDOI0
+          FUPIB0 =+ BFIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + FUPIB0
+          FDOIB0 =+ BFIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + FDOIB0
+          GUPI0 = - BGIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + GUPI0
+          GDOI0 = - BGIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + GDOI0
+          GUPIB0 =- BGIJ(2,IB1,IB2)*SU2*PROPI1 * PROPI2   + GUPIB0
+          GDOIB0 =- BGIJ(3,IB1,IB2)*SU2*PROPI1 * PROPI2   + GDOIB0
+          FUPIC = AFIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + FUPIC
+          FDOIC = AFIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + FDOIC
+          FUPIBC =AFIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + FUPIBC
+          FDOIBC =AFIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + FDOIBC
+          GUPIC = AGIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + GUPIC
+          GDOIC = AGIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + GDOIC
+          GUPIBC=-AGIJ(2,IB1,IB2)*SU1*PROPI1 * PROPI2   + GUPIBC
+          GDOIBC=-AGIJ(3,IB1,IB2)*SU1*PROPI1 * PROPI2   + GDOIBC
         ENDIF
 20     CONTINUE
 10    CONTINUE
+c      FUPI=FUPI*FRCH
+c      FDOI=FDOI*FRCH
+c      FUPIB=FUPIB*FRCH
+c      FDOIB=FDOIB*FRCH
+c      GUPI=GUPI*GRCH
+c      GDOI=GDOI*GRCH
+c      GUPIB=GUPIB*GRCH
+c      GDOIB=GDOIB*GRCH
 
-      CQP(1) =  QU *(FUP  *4D0/9D0 + FRCH*FUPI  *  2D0/3D0 )
-     &  - HPOLAR*DQU *(GUP *4D0/9D0 + GRCH*GUPI *  2D0/3D0 )
-      CQP(2) =  QBU*(FUPB *4D0/9D0 + FRCH*FUPIB *(-2D0/3D0))
-     &  - HPOLAR*DQBU*(GUPB *4D0/9D0 + GRCH*GUPIB *(-2D0/3D0)) + CQP(1)
-      CQP(3) =  QD *(FDO  *1D0/9D0 + FRCH*FDOI  *(-1D0/3D0))
-     &  - HPOLAR*DQD *(GDO  *1D0/9D0 + GRCH*GDOI  *(-1D0/3D0)) + CQP(2)
-      CQP(4) =  QBD*(FDOB *1D0/9D0 + FRCH*FDOIB *  1D0/3D0 )
-     &  - HPOLAR*DQBD*(GDOB *1D0/9D0 + GRCH*GDOIB *  1D0/3D0 ) + CQP(3)
-      CQP(5) =  QS *(FDO  *1D0/9D0 + FRCH*FDOI  *(-1D0/3D0))
-     &  - HPOLAR*DQS *(GDO  *1D0/9D0 + GRCH*GDOI  *(-1D0/3D0)) + CQP(4)
-      CQP(6) =  QBS*(FDOB *1D0/9D0 + FRCH*FDOIB *  1D0/3D0 )
-     &  - HPOLAR*DQBS*(GDOB *1D0/9D0 + GRCH*GDOIB *  1D0/3D0 ) + CQP(5)
-      CQP(7) =  QC *(FUP  *4D0/9D0 + FRCH*FUPI  *  2D0/3D0 )
-     &  - HPOLAR*DQC *(GUP  *4D0/9D0 + GRCH*GUPI  *  2D0/3D0 ) + CQP(6)
-      CQP(8) =  QBC*(FUPB *4D0/9D0 + FRCH*FUPIB *(-2D0/3D0))
-     &  - HPOLAR*DQBC*(GUPB *4D0/9D0 + GRCH*GUPIB *(-2D0/3D0)) + CQP(7)
-      CQP(9) =  QB *(FDO  *1D0/9D0 + FRCH*FDOI  *(-1D0/3D0))
-     &  - HPOLAR*DQB *(GDO  *1D0/9D0 + GRCH*GDOI  *(-1D0/3D0)) + CQP(8)
-      CQP(10) =  QBB*(FDOB *1D0/9D0 + FRCH*FDOIB*  1D0/3D0 )
-     &  - HPOLAR*DQBB*(GDOB *1D0/9D0 + GRCH*GDOIB*  1D0/3D0 ) + CQP(9)
-      CQP(11) =  QT *(FUP  *4D0/9D0 + FRCH*FUPI *  2D0/3D0 )
-     &  - HPOLAR*DQT *(GUP  *4D0/9D0 + GRCH*GUPI *  2D0/3D0 ) + CQP(10)
-      CQP(12) =  QBT*(FUPB *4D0/9D0 + FRCH*FUPIB*(-2D0/3D0))
-     &  - HPOLAR*DQBT*(GUPB *4D0/9D0 + GRCH*GUPIB*(-2D0/3D0)) + CQP(11)
+      FUPI=CHNULL*(FUPI0*FRCH0+FUPIC*FRCHC)
+     &    +DFLOAT(LLEPT)*(FUPI0*FRCHC+FUPIC*FRCH0)
+      FDOI=CHNULL*(FDOI0*FRCH0+FDOIC*FRCHC)
+     &    +DFLOAT(LLEPT)*(FDOI0*FRCHC+FDOIC*FRCH0)
+      FUPIB=CHNULL*(FUPIB0*FRCH0+FUPIBC*FRCHC)
+     &     +DFLOAT(LLEPT)*(FUPIB0*FRCHC+FUPIBC*FRCH0)
+      FDOIB=CHNULL*(FDOIB0*FRCH0+FDOIBC*FRCHC)
+     &     +DFLOAT(LLEPT)*(FDOIB0*FRCHC+FDOIBC*FRCH0)
+      GUPI=CHNULL*(GUPI0*GRCH0+GUPIC*GRCHC)
+     &    +DFLOAT(LLEPT)*(GUPI0*GRCHC+GUPIC*GRCH0)
+      GDOI=CHNULL*(GDOI0*GRCH0+GDOIC*GRCHC)
+     &    +DFLOAT(LLEPT)*(GDOI0*GRCHC+GDOIC*GRCH0)
+      GUPIB=CHNULL*(GUPIB0*GRCH0+GUPIBC*GRCHC)
+     &     +DFLOAT(LLEPT)*(GUPIB0*GRCHC+GUPIBC*GRCH0)
+      GDOIB=CHNULL*(GDOIB0*GRCH0+GDOIBC*GRCHC)
+     &     +DFLOAT(LLEPT)*(GDOIB0*GRCHC+GDOIBC*GRCH0)
+
+      CQP(1) =  QU *(FUP  *4D0/9D0 + FUPI  *  2D0/3D0 )
+     &  - HPOLAR*DQU *(GUP *4D0/9D0 + GUPI *  2D0/3D0 )
+      CQP(2) =  QBU*(FUPB *4D0/9D0 + FUPIB *(-2D0/3D0))
+     &  - HPOLAR*DQBU*(GUPB *4D0/9D0 + GUPIB *(-2D0/3D0)) + CQP(1)
+      CQP(3) =  QD *(FDO  *1D0/9D0 + FDOI  *(-1D0/3D0))
+     &  - HPOLAR*DQD *(GDO  *1D0/9D0 + GDOI  *(-1D0/3D0)) + CQP(2)
+      CQP(4) =  QBD*(FDOB *1D0/9D0 + FDOIB *  1D0/3D0 )
+     &  - HPOLAR*DQBD*(GDOB *1D0/9D0 + GDOIB *  1D0/3D0 ) + CQP(3)
+      CQP(5) =  QS *(FDO  *1D0/9D0 + FDOI  *(-1D0/3D0))
+     &  - HPOLAR*DQS *(GDO  *1D0/9D0 + GDOI  *(-1D0/3D0)) + CQP(4)
+      CQP(6) =  QBS*(FDOB *1D0/9D0 + FDOIB *  1D0/3D0 )
+     &  - HPOLAR*DQBS*(GDOB *1D0/9D0 + GDOIB *  1D0/3D0 ) + CQP(5)
+      CQP(7) =  QC *(FUP  *4D0/9D0 + FUPI  *  2D0/3D0 )
+     &  - HPOLAR*DQC *(GUP  *4D0/9D0 + GUPI  *  2D0/3D0 ) + CQP(6)
+      CQP(8) =  QBC*(FUPB *4D0/9D0 + FUPIB *(-2D0/3D0))
+     &  - HPOLAR*DQBC*(GUPB *4D0/9D0 + GUPIB *(-2D0/3D0)) + CQP(7)
+      CQP(9) =  QB *(FDO  *1D0/9D0 + FDOI  *(-1D0/3D0))
+     &  - HPOLAR*DQB *(GDO  *1D0/9D0 + GDOI  *(-1D0/3D0)) + CQP(8)
+      CQP(10) =  QBB*(FDOB *1D0/9D0 + FDOIB*  1D0/3D0 )
+     &  - HPOLAR*DQBB*(GDOB *1D0/9D0 + GDOIB*  1D0/3D0 ) + CQP(9)
+      CQP(11) =  QT *(FUP  *4D0/9D0 + FUPI *  2D0/3D0 )
+     &  - HPOLAR*DQT *(GUP  *4D0/9D0 + GUPI *  2D0/3D0 ) + CQP(10)
+      CQP(12) =  QBT*(FUPB *4D0/9D0 + FUPIB*(-2D0/3D0))
+     &  - HPOLAR*DQBT*(GUPB *4D0/9D0 + GUPIB*(-2D0/3D0)) + CQP(11)
       SUMME = CQP(12)
       HSK1K3 = SUMME*Y*SX1NRM/4D0/SQGRAM/XS
      *      * (UVMAX-UVMIN)*(XS-XX)*(VMAX-VMIN)*A3*(A1MAX-A1MIN)
@@ -9360,99 +9759,99 @@ C...BORN CROSS SECTIONS
       IF (LPAR(1).EQ.1) THEN
         IF (LQ.EQ.1) THEN
          CALL HSSAB0(X,Y,POL,HPOL, 1,A1F,A3F,B1F,B3F)
-         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU
+         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU*CHNULL
      *                -LL*(PONULL*B3F+POL*A3F)*SMU)*QU
-     *              +HPOL*((PONULL*A3F+POL*B3F)*SPU
+     *              +HPOL*((PONULL*A3F+POL*B3F)*SPU*CHNULL
      *                -LL*(PONULL*B1F+POL*A1F)*SMU)*DQU)
         ENDIF
         IF (LQ.EQ.2) THEN
          CALL HSSAB0(X,Y,POL,HPOL, 2,A1F,A3F,B1F,B3F)
-         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU
+         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU*CHNULL
      *                -LL*(PONULL*B3F+POL*A3F)*SMU)*QD
-     *              +HPOL*((PONULL*A3F+POL*B3F)*SPU
+     *              +HPOL*((PONULL*A3F+POL*B3F)*SPU*CHNULL
      *                -LL*(PONULL*B1F+POL*A1F)*SMU)*DQD)
         ENDIF
         IF (LQ.EQ.3) THEN
          CALL HSSAB0(X,Y,POL,HPOL, 2,A1F,A3F,B1F,B3F)
-         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU
+         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU*CHNULL
      *                -LL*(PONULL*B3F+POL*A3F)*SMU)*QS
-     *              +HPOL*((PONULL*A3F+POL*B3F)*SPU
+     *              +HPOL*((PONULL*A3F+POL*B3F)*SPU*CHNULL
      *                -LL*(PONULL*B1F+POL*A1F)*SMU)*DQS)
         ENDIF
         IF (LQ.EQ.4) THEN
          CALL HSSAB0(X,Y,POL,HPOL, 1,A1F,A3F,B1F,B3F)
-         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU
+         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU*CHNULL
      *                -LL*(PONULL*B3F+POL*A3F)*SMU)*QC
-     *              +HPOL*((PONULL*A3F+POL*B3F)*SPU
+     *              +HPOL*((PONULL*A3F+POL*B3F)*SPU*CHNULL
      *                -LL*(PONULL*B1F+POL*A1F)*SMU)*DQC)
         ENDIF
         IF (LQ.EQ.5) THEN
          CALL HSSAB0(X,Y,POL,HPOL, 2,A1F,A3F,B1F,B3F)
-         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU
+         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU*CHNULL
      *                -LL*(PONULL*B3F+POL*A3F)*SMU)*QB
-     *              +HPOL*((PONULL*A3F+POL*B3F)*SPU
+     *              +HPOL*((PONULL*A3F+POL*B3F)*SPU*CHNULL
      *                -LL*(PONULL*B1F+POL*A1F)*SMU)*DQB)
         ENDIF
         IF (LQ.EQ.6) THEN
          CALL HSSAB0(X,Y,POL,HPOL, 1,A1F,A3F,B1F,B3F)
-         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU
+         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU*CHNULL
      *                -LL*(PONULL*B3F+POL*A3F)*SMU)*QT
-     *              +HPOL*((PONULL*A3F+POL*B3F)*SPU
+     *              +HPOL*((PONULL*A3F+POL*B3F)*SPU*CHNULL
      *                -LL*(PONULL*B1F+POL*A1F)*SMU)*DQT)
         ENDIF
         IF (LQ.EQ.-1) THEN
          CALL HSSAB0(X,Y,POL,HPOL, 1,A1F,A3F,B1F,B3F)
-         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU
+         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU*CHNULL
      *                +LL*(PONULL*B3F+POL*A3F)*SMU)*QBU
-     *              -HPOL*((PONULL*A3F+POL*B3F)*SPU
+     *              -HPOL*((PONULL*A3F+POL*B3F)*SPU*CHNULL
      *                +LL*(PONULL*B1F+POL*A1F)*SMU)*DQBU)
         ENDIF
         IF (LQ.EQ.-2) THEN
          CALL HSSAB0(X,Y,POL,HPOL, 2,A1F,A3F,B1F,B3F)
-         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU
+         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU*CHNULL
      *                +LL*(PONULL*B3F+POL*A3F)*SMU)*QBD
-     *              -HPOL*((PONULL*A3F+POL*B3F)*SPU
+     *              -HPOL*((PONULL*A3F+POL*B3F)*SPU*CHNULL
      *                +LL*(PONULL*B1F+POL*A1F)*SMU)*DQBD)
         ENDIF
         IF (LQ.EQ.-3) THEN
          CALL HSSAB0(X,Y,POL,HPOL, 2,A1F,A3F,B1F,B3F)
-         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU
+         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU*CHNULL
      *                +LL*(PONULL*B3F+POL*A3F)*SMU)*QBS
-     *              -HPOL*((PONULL*A3F+POL*B3F)*SPU
+     *              -HPOL*((PONULL*A3F+POL*B3F)*SPU*CHNULL
      *                +LL*(PONULL*B1F+POL*A1F)*SMU)*DQBS)
         ENDIF
         IF (LQ.EQ.-4) THEN
          CALL HSSAB0(X,Y,POL,HPOL, 1,A1F,A3F,B1F,B3F)
-         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU
+         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU*CHNULL
      *                +LL*(PONULL*B3F+POL*A3F)*SMU)*QBC
-     *              -HPOL*((PONULL*A3F+POL*B3F)*SPU
+     *              -HPOL*((PONULL*A3F+POL*B3F)*SPU*CHNULL
      *                +LL*(PONULL*B1F+POL*A1F)*SMU)*DQBC)
         ENDIF
         IF (LQ.EQ.-5) THEN
          CALL HSSAB0(X,Y,POL,HPOL, 2,A1F,A3F,B1F,B3F)
-         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU
+         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU*CHNULL
      *                +LL*(PONULL*B3F+POL*A3F)*SMU)*QBB
-     *              -HPOL*((PONULL*A3F+POL*B3F)*SPU
+     *              -HPOL*((PONULL*A3F+POL*B3F)*SPU*CHNULL
      *                +LL*(PONULL*B1F+POL*A1F)*SMU)*DQBB)
         ENDIF
         IF (LQ.EQ.-6) THEN
          CALL HSSAB0(X,Y,POL,HPOL, 1,A1F,A3F,B1F,B3F)
-         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU
+         HSSGNC=SPN*(((PONULL*A1F+POL*B1F)*SPU*CHNULL
      *                +LL*(PONULL*B3F+POL*A3F)*SMU)*QBT
-     *              -HPOL*((PONULL*A3F+POL*B3F)*SPU
+     *              -HPOL*((PONULL*A3F+POL*B3F)*SPU*CHNULL
      *                +LL*(PONULL*B1F+POL*A1F)*SMU)*DQBT)
         ENDIF
 C
         IF (LQ.EQ.0.AND.IPDFOP.EQ.1) THEN
           CALL HSSAB0(X,Y,POL,HPOL,1,A1U,A3U,B1U,B3U)
           CALL HSSAB0(X,Y,POL,HPOL,2,A1D,A3D,B1D,B3D)
-          F1U=(PONULL*A1U+POL*B1U)*SPU
+          F1U=CHNULL*(PONULL*A1U+POL*B1U)*SPU
           F3U=-LL*(PONULL*B3U+POL*A3U)*SMU
-          F1D=(PONULL*A1D+POL*B1D)*SPU
+          F1D=CHNULL*(PONULL*A1D+POL*B1D)*SPU
           F3D=-LL*(PONULL*B3D+POL*A3D)*SMU
-          G3U=(PONULL*A3U+POL*B3U)*SPU
+          G3U=CHNULL*(PONULL*A3U+POL*B3U)*SPU
           G1U=-LL*(PONULL*B1U+POL*A1U)*SMU
-          G3D=(PONULL*A3D+POL*B3D)*SPU
+          G3D=CHNULL*(PONULL*A3D+POL*B3D)*SPU
           G1D=-LL*(PONULL*B1D+POL*A1D)*SMU
           CQP(1)=         (F1U+F3U)*QU +HPOL*(G3U+G1U)*DQU
           CQP(2) =CQP(1) +(F1U-F3U)*QBU-HPOL*(G3U-G1U)*DQBU
@@ -9471,8 +9870,8 @@ C
             CQP(I)=CQP(I)*SPN
  11       CONTINUE
         ELSEIF (LQ.EQ.0.AND.IPDFOP.EQ.0) THEN
-          R1=Y*Y*(1D0+2D0*MEI2/T)
-          R2=(1D0-Y+MPRO2*T/SHAT/SHAT)/X
+          R1=CHNULL*Y*Y*(1D0+2D0*MEI2/T)
+          R2=CHNULL*(1D0-Y+MPRO2*T/SHAT/SHAT)/X
           R3=-LL*Y*(1D0-Y/2D0)
           CQP(12)=0D0
           DO 121 IB1=1,2
@@ -9483,8 +9882,8 @@ C
  121      CONTINUE
           HSSGNC=8D0*SPN*CQP(12)/T/T
         ELSEIF (LQ.EQ.0.AND.IPDFOP.GE.2) THEN
-          R1=Y*Y*(1D0+2D0*MEI2/T)
-          R2=(1D0-Y+MPRO2*T/SHAT/SHAT)/X
+          R1=CHNULL*Y*Y*(1D0+2D0*MEI2/T)
+          R2=CHNULL*(1D0-Y+MPRO2*T/SHAT/SHAT)/X
           R3=-LL*Y*(1D0-Y/2D0)
           SUMME=0D0
           DO 131 IB1=1,2
@@ -9496,13 +9895,13 @@ C
           HSSGNC=8D0*SPN*SUMME/T/T
           CALL HSSAB0(X,Y,POL,HPOL,1,A1U,A3U,B1U,B3U)
           CALL HSSAB0(X,Y,POL,HPOL,2,A1D,A3D,B1D,B3D)
-          F1U=(PONULL*A1U+POL*B1U)*SPU
+          F1U=CHNULL*(PONULL*A1U+POL*B1U)*SPU
           F3U=-LL*(PONULL*B3U+POL*A3U)*SMU
-          F1D=(PONULL*A1D+POL*B1D)*SPU
+          F1D=CHNULL*(PONULL*A1D+POL*B1D)*SPU
           F3D=-LL*(PONULL*B3D+POL*A3D)*SMU
-          G3U=(PONULL*A3U+POL*B3U)*SPU
+          G3U=CHNULL*(PONULL*A3U+POL*B3U)*SPU
           G1U=-LL*(PONULL*B1U+POL*A1U)*SMU
-          G3D=(PONULL*A3D+POL*B3D)*SPU
+          G3D=CHNULL*(PONULL*A3D+POL*B3D)*SPU
           G1D=-LL*(PONULL*B1D+POL*A1D)*SMU
           CQP(1)=         (F1U+F3U)*QU +HPOL*(G3U+G1U)*DQU
           CQP(2) =CQP(1) +(F1U-F3U)*QBU-HPOL*(G3U-G1U)*DQBU
@@ -9648,8 +10047,8 @@ C
  21       CONTINUE
           HSSGNC=CQP(12)
         ELSEIF (LQ.EQ.0.AND.IPDFOP.EQ.0) THEN
-          R1=Y*Y*(1D0+2D0*MEI2/T)
-          R2=(1D0-Y+MPRO2*T/SHAT/SHAT)/X
+          R1=CHNULL*Y*Y*(1D0+2D0*MEI2/T)
+          R2=CHNULL*(1D0-Y+MPRO2*T/SHAT/SHAT)/X
           R3=-LL*Y*(1D0-Y/2D0)
           CQP(12)=0D0
           DO 221 IB1=1,2
@@ -9660,8 +10059,8 @@ C
  221      CONTINUE
           HSSGNC=8D0*SPN*CQP(12)/T/T
         ELSEIF (LQ.EQ.0.AND.IPDFOP.GE.2) THEN
-          R1=Y*Y*(1D0+2D0*MEI2/T)
-          R2=(1D0-Y+MPRO2*T/SHAT/SHAT)/X
+          R1=CHNULL*Y*Y*(1D0+2D0*MEI2/T)
+          R2=CHNULL*(1D0-Y+MPRO2*T/SHAT/SHAT)/X
           R3=-LL*Y*(1D0-Y/2D0)
           SUMME=0D0
           DO 231 IB1=1,2
@@ -9946,6 +10345,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       COMPLEX(kind=8) CMZ2,CMW2
      *       ,HSBRNC,BSQ,HSBCGA,HSBXCV,HSBXCA,HSBXI0,HSBXI5
      *       ,CVEG,HSFHFB
+      COMPLEX(kind=8) BSQC,BSQ0
       COMMON /HSKNST/ PI,ALPHA,ALP1PI,ALP2PI,ALP4PI,E,GF,SXNORM,SX1NRM
       COMMON /HSGSW/  SW,CW,SW2,CW2
      *              ,MW,MZ,MH,ME,MMY,MTAU,MU,MD,MS,MC,MB,MT
@@ -9958,6 +10358,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &               ,AFIJ1(3,2,2),BFIJ1(3,2,2),FLIND1(2,3,2,2)
       COMMON /HSELAB/ SP,EELE,PELE,EPRO,PPRO
       COMMON /HSPARL/ LPAR(20),LPARIN(12)
+      COMMON /HSASY0/ PONULL,CHNULL,ICPASY
       COMMON /HSFRFF/ ALPFFQ,AKAPPA,GMUFFQ,SWEFF2
 C
       IF (LPAR(2).EQ.0) THEN
@@ -10004,6 +10405,12 @@ C..SOFT BREMSSTRAHLUNG (INCLUDING QUARK SELF ENERGY)
       IF (LPAR(11).EQ.1) THEN
         BSQ=HSBRNC(X,Y,LL,LQ)
         RBSQ=DREAL(BSQ)*ALP2PI
+        if (icpasy.eq.2) then
+          BSQC=(HSBRNC(X,Y,LL,LQ)-HSBRNC(X,Y,-LL,LQ))/2d0 
+          BSQ0=(HSBRNC(X,Y,LL,LQ)+HSBRNC(X,Y,-LL,LQ))/2d0
+          RBSQC=DREAL(BSQC)*ALP2PI
+          RBSQ0=DREAL(BSQ0)*ALP2PI
+        endif
         CALL HSSAB0(X,Y,POL,HPOL,LQ,RA10,RA30,RB10,RB30)
 C..QED VERTEX
         LPRK15=LPAR(15)
@@ -10012,6 +10419,10 @@ C..QED VERTEX
         LPAR(15)=LPRK15
         DVERTX=DREAL(CVEG)
         RBSQ=RBSQ+2D0*DVERTX
+        if (icpasy.eq.2) then
+          RBSQC=RBSQC
+          RBSQ0=RBSQ0+2D0*DVERTX
+        endif
         ELSE
         RBSQ=0D0
         RA10=0D0
@@ -10029,6 +10440,17 @@ C..BOX DIAGRAMS
         BXGZ = -LL*2D0*ALP1PI*DLOG((MZ2-T)/(-T))*DLOG(-U/S)
      *         -LL*ALP1PI*DREAL(HSBXCV(T,S,CMZ2)-HSBXCV(T,U,CMZ2))
         BXGZ5=  ALP1PI*DREAL( HSBXCA(T,S,CMZ2) + HSBXCA(T,U,CMZ2) )
+        if (icpasy.eq.2) then
+        BXGGC = -LL*ALP1PI*DREAL(HSBCGA(T,S)-HSBCGA(T,U))
+        BXGG5C= 0D0
+        BXGZC = -LL*2D0*ALP1PI*DLOG((MZ2-T)/(-T))*DLOG(-U/S)
+     *         -LL*ALP1PI*DREAL(HSBXCV(T,S,CMZ2)-HSBXCV(T,U,CMZ2))
+        BXGZ5C= 0D0
+        BXGG0 = 0D0
+        BXGG50= ALP1PI*DREAL(HSBCGA(T,S)+HSBCGA(T,U))
+        BXGZ0 = 0D0
+        BXGZ50= ALP1PI*DREAL( HSBXCA(T,S,CMZ2) + HSBXCA(T,U,CMZ2) )
+        endif
         F1BGG=F1GG*CQ
         F1BGZ=F1GZ*CQ
         F1BZZ=F1ZZ*CQ
@@ -10054,6 +10476,12 @@ C..BOX DIAGRAMS
         F3BZZ=F3ZZ*CQ
         BXZZ = -LL*ALP1PI*DREAL(HSBXI0(T,U,CMZ2) - HSBXI0(T,S,CMZ2))
         BXZZ5=     ALP1PI*DREAL(HSBXI5(T,U,CMZ2) + HSBXI5(T,S,CMZ2))
+        if (icpasy.eq.2) then
+        BXZZC = -LL*ALP1PI*DREAL(HSBXI0(T,U,CMZ2) - HSBXI0(T,S,CMZ2))
+        BXZZ5C= 0D0
+        BXZZ0 = 0D0
+        BXZZ50= ALP1PI*DREAL(HSBXI5(T,U,CMZ2) + HSBXI5(T,S,CMZ2))
+        endif
         FGBWW = (VAFI1(1,LQF,1)+VAFI1(2,LQF,1))
      *         *(VAFI1(1,  1,1)+VAFI1(2,  1,1))/4D0/SW2/SW2
         FZBWW = (VAFI1(1,LQF,2)+VAFI1(2,LQF,2))
@@ -10075,6 +10503,21 @@ C..BOX DIAGRAMS
             BXWW =  ALP1PI*DREAL( HSBXI0(T,S,CMW2)+HSBXI5(T,S,CMW2))
           ENDIF
         ENDIF
+        if (icpasy.eq.2) then
+          IF (MOD(LQ,2).EQ.1) THEN
+            BXWWC=(ALP1PI*DREAL(-HSBXI0(T,U,CMW2)+HSBXI5(T,U,CMW2))
+     *           -ALP1PI*DREAL(-HSBXI0(T,S,CMW2)+HSBXI5(T,S,CMW2)))/2D0
+            BXWW0=(ALP1PI*DREAL(-HSBXI0(T,U,CMW2)+HSBXI5(T,U,CMW2))
+     *           +ALP1PI*DREAL(-HSBXI0(T,S,CMW2)+HSBXI5(T,S,CMW2)))/2D0
+            
+          ELSE
+            BXWWC=(ALP1PI*DREAL(HSBXI0(T,S,CMW2)+HSBXI5(T,S,CMW2))
+     *           -ALP1PI*DREAL(HSBXI0(T,U,CMW2)+HSBXI5(T,U,CMW2)))/2D0
+            BXWW0=(ALP1PI*DREAL(HSBXI0(T,S,CMW2)+HSBXI5(T,S,CMW2))
+     *           +ALP1PI*DREAL(HSBXI0(T,U,CMW2)+HSBXI5(T,U,CMW2)))/2D0
+          ENDIF
+          BXWWC=BXWWC*LL
+        endif
       ELSE
         BXZZ=0D0
         BXZZ5=0D0
@@ -10140,56 +10583,154 @@ C
       RA1=A1
       RB3=B3
 C
-C      IF (POL.EQ.0D0.AND.HPOL.EQ.0D0) THEN
-C        RB1=0D0
-C        RA3=0D0
-C        ELSE
-        IF (LPAR(3).LT.3) THEN
-          B1=F1GG*DG*DG*EMEGG+2D0*F1GZ*DG*DZ*EMEGZ+F1ZZ*DZ*DZ*EMEZZ
-     *       +RBSQ*RB10
-          ELSE
-          B1=(F1GG*DG*DG*EMEGG+2D0*F1GZ*DG*DZ*EMEGZ+F1ZZ*DZ*DZ*EMEZZ)
-     *       *(1D0+RBSQ)
-        ENDIF
-C
-        IF (LPAR(14).EQ.1) THEN
-          B1 = B1
-     *      +(BXGG+BXGZ)*EMEGZ*DG*DZ*F1BGZ
-     *      -(BXGG5+BXGZ5)*EPEGZ*DG*DZ*F3BGZ
-     *      +BXGZ*EMEZZ*DZ*DZ*F1BZZ - BXGZ5*EPEZZ*DZ*DZ*F3BZZ
-        ENDIF
-        IF (LPAR(16).EQ.1) THEN
-          B1 = B1 +
-     *       BXZZ*EMEZZ*DG*DG*F1BZZ - BXZZ5*DG*DG*EPEZZ*F3BZZ
-     *      -BXZZ*(EPEZZ*AEZ-EMEZZ*VEZ)*DG*DZ*FBZZZ
-     *      +BXZZ5*(EPEZZ*VEZ-EMEZZ*AEZ)*DG*DZ*FBZZ5
-     *      -DG*(DG*FGBWW+DZ*FZBWW)*BXWW
-        ENDIF
-C
-        IF (LPAR(3).LT.3) THEN
-          A3=F3GG*DG*DG*EPEGG+2D0*F3GZ*DG*DZ*EPEGZ+F3ZZ*DZ*DZ*EPEZZ
-     *       +RBSQ*RA30
-          ELSE
-          A3=(F3GG*DG*DG*EPEGG+2D0*F3GZ*DG*DZ*EPEGZ+F3ZZ*DZ*DZ*EPEZZ)
-     *       *(1D0+RBSQ)
-        ENDIF
-C
-        IF (LPAR(14).EQ.1) THEN
-          A3 = A3 +
-     *       (BXGG+BXGZ)*EPEGZ*DG*DZ*F3BGZ
-     *      -(BXGG5+BXGZ5)*EMEGZ*DG*DZ*F1BGZ
-     *      +BXGZ*EPEZZ*DZ*DZ*F3BZZ - BXGZ5*EMEZZ*DZ*DZ*F1BZZ
-        ENDIF
-        IF (LPAR(16).EQ.1) THEN
-          A3 = A3 +
-     *       BXZZ*EPEZZ*DG*DG*F3BZZ - BXZZ5*DG*DG*EMEZZ*F1BZZ
-     *      +BXZZ*(EPEZZ*VEZ-EMEZZ*AEZ)*DG*DZ*FBZZ5
-     *      -BXZZ5*(EPEZZ*AEZ-EMEZZ*VEZ)*DG*DZ*FBZZZ
-     *      -DG*(DG*FGBWW+DZ*FZBWW)*BXWW
-C        ENDIF
-        RB1=B1
-        RA3=A3
+      IF (LPAR(3).LT.3) THEN
+        B1=F1GG*DG*DG*EMEGG+2D0*F1GZ*DG*DZ*EMEGZ+F1ZZ*DZ*DZ*EMEZZ
+     *     +RBSQ*RB10
+        ELSE
+        B1=(F1GG*DG*DG*EMEGG+2D0*F1GZ*DG*DZ*EMEGZ+F1ZZ*DZ*DZ*EMEZZ)
+     *     *(1D0+RBSQ)
       ENDIF
+C
+      IF (LPAR(14).EQ.1) THEN
+        B1 = B1
+     *    +(BXGG+BXGZ)*EMEGZ*DG*DZ*F1BGZ
+     *    -(BXGG5+BXGZ5)*EPEGZ*DG*DZ*F3BGZ
+     *    +BXGZ*EMEZZ*DZ*DZ*F1BZZ - BXGZ5*EPEZZ*DZ*DZ*F3BZZ
+      ENDIF
+      IF (LPAR(16).EQ.1) THEN
+        B1 = B1 +
+     *     BXZZ*EMEZZ*DG*DG*F1BZZ - BXZZ5*DG*DG*EPEZZ*F3BZZ
+     *    -BXZZ*(EPEZZ*AEZ-EMEZZ*VEZ)*DG*DZ*FBZZZ
+     *    +BXZZ5*(EPEZZ*VEZ-EMEZZ*AEZ)*DG*DZ*FBZZ5
+     *    -DG*(DG*FGBWW+DZ*FZBWW)*BXWW
+      ENDIF
+C
+      IF (LPAR(3).LT.3) THEN
+        A3=F3GG*DG*DG*EPEGG+2D0*F3GZ*DG*DZ*EPEGZ+F3ZZ*DZ*DZ*EPEZZ
+     *     +RBSQ*RA30
+        ELSE
+        A3=(F3GG*DG*DG*EPEGG+2D0*F3GZ*DG*DZ*EPEGZ+F3ZZ*DZ*DZ*EPEZZ)
+     *     *(1D0+RBSQ)
+      ENDIF
+C
+      IF (LPAR(14).EQ.1) THEN
+        A3 = A3 +
+     *     (BXGG+BXGZ)*EPEGZ*DG*DZ*F3BGZ
+     *    -(BXGG5+BXGZ5)*EMEGZ*DG*DZ*F1BGZ
+     *    +BXGZ*EPEZZ*DZ*DZ*F3BZZ - BXGZ5*EMEZZ*DZ*DZ*F1BZZ
+      ENDIF
+      IF (LPAR(16).EQ.1) THEN
+        A3 = A3 +
+     *     BXZZ*EPEZZ*DG*DG*F3BZZ - BXZZ5*DG*DG*EMEZZ*F1BZZ
+     *    +BXZZ*(EPEZZ*VEZ-EMEZZ*AEZ)*DG*DZ*FBZZ5
+     *    -BXZZ5*(EPEZZ*AEZ-EMEZZ*VEZ)*DG*DZ*FBZZZ
+     *    -DG*(DG*FGBWW+DZ*FZBWW)*BXWW
+      ENDIF
+      RB1=B1
+      RA3=A3
+
+
+C...To construct the charge-odd terms in HSSGNC, need only the following
+      if (icpasy.eq.2) then
+      IF (LPAR(3).LT.3) THEN
+        A1=+RBSQC*RA10
+        ELSE
+        A1=(F1GG*DG*DG*EPEGG+2D0*F1GZ*DG*DZ*EPEGZ+F1ZZ*DZ*DZ*EPEZZ)
+     *     *RBSQC
+      ENDIF
+C
+      IF (LPAR(14).EQ.1) THEN
+        A1 = A1 +
+     *     BXGGC*EPEGG*DG*DG*F1BGG
+     *    +(BXGGC+BXGZC)*EPEGZ*DG*DZ*F1BGZ
+     *    -(BXGG5C+BXGZ5C)*EMEGZ*DG*DZ*F3BGZ
+     *    +BXGZC*EPEZZ*DZ*DZ*F1BZZ - BXGZ5C*EMEZZ*DZ*DZ*F3BZZ
+      ENDIF
+      IF (LPAR(16).EQ.1) THEN
+        A1 = A1 +
+     *     BXZZC*FLIND1(1,1,2,2)*DG*DG*F1BZZ
+     *    -BXZZ5C*DG*DG*FLIND1(2,1,2,2)*F3BZZ
+     *    +BXZZC*(FLIND1(1,1,2,2)*VAFI1(1,1,2)
+     *           +FLIND1(2,1,2,2)*VAFI1(2,1,2))*DG*DZ*FBZZZ
+     *    -BXZZ5C*(FLIND1(1,1,2,2)*VAFI1(2,1,2)
+     *           +FLIND1(2,1,2,2)*VAFI1(1,1,2))*DG*DZ*FBZZ5
+     *    +DG*(DG*FGBWW+DZ*FZBWW)*BXWWC
+      ENDIF
+C
+      IF (LPAR(3).LT.3) THEN
+        B3=F3GG*DG*DG*EMEGG+2D0*F3GZ*DG*DZ*EMEGZ+F3ZZ*DZ*DZ*EMEZZ
+     *     +RBSQ0*RB30
+        ELSE
+        B3=(F3GG*DG*DG*EMEGG+2D0*F3GZ*DG*DZ*EMEGZ+F3ZZ*DZ*DZ*EMEZZ)
+     *     *(1D0+RBSQ0)
+      ENDIF
+C
+      IF (LPAR(14).EQ.1) THEN
+        B3 = B3
+     *    -EPEGG*DG*DG*F1BGG*BXGG50
+     *    +(BXGG0+BXGZ0)*EMEGZ*DG*DZ*F3BGZ
+     *    -(BXGG50+BXGZ50)*EPEGZ*DG*DZ*F1BGZ
+     *    +BXGZ0*EMEZZ*DZ*DZ*F3BZZ - BXGZ50*EPEZZ*DZ*DZ*F1BZZ
+      ENDIF
+      IF (LPAR(16).EQ.1) THEN
+        B3 = B3 +
+     *     BXZZ0*FLIND1(2,1,2,2)*DG*DG*F3BZZ
+     *    -BXZZ50*DG*DG*FLIND1(1,1,2,2)*F1BZZ
+     *    +BXZZ0*(FLIND1(1,1,2,2)*VAFI1(2,1,2)
+     *           +FLIND1(2,1,2,2)*VAFI1(1,1,2))*DG*DZ*FBZZ5
+     *    -BXZZ50*(FLIND1(1,1,2,2)*VAFI1(1,1,2)
+     *           +FLIND1(2,1,2,2)*VAFI1(2,1,2))*DG*DZ*FBZZZ
+     *    +DG*(DG*FGBWW+DZ*FZBWW)*BXWW0
+      ENDIF
+      RA1=A1
+      RB3=B3
+C
+      IF (LPAR(3).LT.3) THEN
+        B1=+RBSQC*RB10
+        ELSE
+        B1=(F1GG*DG*DG*EMEGG+2D0*F1GZ*DG*DZ*EMEGZ+F1ZZ*DZ*DZ*EMEZZ)
+     *     *RBSQC
+      ENDIF
+C
+      IF (LPAR(14).EQ.1) THEN
+        B1 = B1
+     *    +(BXGGC+BXGZC)*EMEGZ*DG*DZ*F1BGZ
+     *    -(BXGG5C+BXGZ5C)*EPEGZ*DG*DZ*F3BGZ
+     *    +BXGZC*EMEZZ*DZ*DZ*F1BZZ - BXGZ5C*EPEZZ*DZ*DZ*F3BZZ
+      ENDIF
+      IF (LPAR(16).EQ.1) THEN
+        B1 = B1 +
+     *     BXZZC*EMEZZ*DG*DG*F1BZZ - BXZZ5C*DG*DG*EPEZZ*F3BZZ
+     *    -BXZZC*(EPEZZ*AEZ-EMEZZ*VEZ)*DG*DZ*FBZZZ
+     *    +BXZZ5C*(EPEZZ*VEZ-EMEZZ*AEZ)*DG*DZ*FBZZ5
+     *    -DG*(DG*FGBWW+DZ*FZBWW)*BXWWC
+      ENDIF
+C
+      IF (LPAR(3).LT.3) THEN
+        A3=F3GG*DG*DG*EPEGG+2D0*F3GZ*DG*DZ*EPEGZ+F3ZZ*DZ*DZ*EPEZZ
+     *     +RBSQ0*RA30
+        ELSE
+        A3=(F3GG*DG*DG*EPEGG+2D0*F3GZ*DG*DZ*EPEGZ+F3ZZ*DZ*DZ*EPEZZ)
+     *     *(1D0+RBSQ0)
+      ENDIF
+C
+      IF (LPAR(14).EQ.1) THEN
+        A3 = A3 +
+     *     (BXGG0+BXGZ0)*EPEGZ*DG*DZ*F3BGZ
+     *    -(BXGG50+BXGZ50)*EMEGZ*DG*DZ*F1BGZ
+     *    +BXGZ0*EPEZZ*DZ*DZ*F3BZZ - BXGZ50*EMEZZ*DZ*DZ*F1BZZ
+      ENDIF
+      IF (LPAR(16).EQ.1) THEN
+        A3 = A3 +
+     *     BXZZ0*EPEZZ*DG*DG*F3BZZ - BXZZ50*DG*DG*EMEZZ*F1BZZ
+     *    +BXZZ0*(EPEZZ*VEZ-EMEZZ*AEZ)*DG*DZ*FBZZ5
+     *    -BXZZ50*(EPEZZ*AEZ-EMEZZ*VEZ)*DG*DZ*FBZZZ
+     *    -DG*(DG*FGBWW+DZ*FZBWW)*BXWW0
+      ENDIF
+      RB1=B1
+      RA3=A3
+      endif
+      
       RETURN
       END
 C
@@ -10619,6 +11160,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      *              ,MW,MZ,MH,ME,MMY,MTAU,MU,MD,MS,MC,MB,MT
      *              ,MW2,MZ2,MH2,ME2,MMY2,MTAU2,MU2,MD2,MS2,MC2,MB2,MT2
       COMMON /HSPARL/ LPAR(20),LPARIN(12)
+      HSSRGG=DCMPLX(0D0,0D0)
       IF (LPAR(7).EQ.1) THEN
 C...HADRONIC CONTRIBUTION FROM EFFECTIVE QUARK LOOPS
         HSSRGG=+ALP1PI*(
@@ -12000,6 +12542,8 @@ C
      *                DQT,DQBT
       COMMON /HSWGTC/ IWEIGS
 C
+      HSSGCC=0D0
+
 C---EXTERNAL WEIGHT
       IACPT=1
       IF (IWEIGS.GT.0) THEN
@@ -17870,6 +18414,7 @@ C
       IMPLICIT DOUBLE PRECISION (A-H,M,O-Z)
       DIMENSION ARG(2),BLOWC(2),BUPC(2)
       COMMON /HSD01L/ BLOWC,BUPC,ARG1,ACCREQ,INCCC
+      DFNC00=0D0
       NDIM=2
       ARG(1)=ARG1
       ARG(2)=B2
