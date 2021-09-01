@@ -30,9 +30,8 @@ C                               UNIVERSITAET LEIPZIG
 C                               FRG
 C
 C     with extensions by T. Martini (for hadron polarization, 2012+13)
-C     Last modification for muon scattering at Compass
 C
-C     VERSION 4.6.18b,  Aug 26 2021
+C     VERSION 4.6.19,  Sep 01 2021
 C
 C***********************************************************************
 C
@@ -289,7 +288,7 @@ C---PRINT THE TITLE
      3//,10X,'                         HERACLES '
      4//,10X,'     Event generator for deep-inelastic e-P collisions '
      5 /,10X,'              including radiative corrections  '
-     6//,10X,'                 VERSION 4.6.18b, 26.08.2021 '//
+     6//,10X,'                 VERSION 4.6.19, 01.09.2021 '//
      8//,10X,'                      H. Spiesberger '//
      9' **************************************************',
      1'****************************',//)
@@ -14297,7 +14296,9 @@ C---TO BE USED TOGETHER WITH PARTON DISTRIBUTIONS
 
 C---NUCLEAR TARGET
       IF (INT(HNA).NE.1.OR.INT(HNZ).NE.1) THEN
-        IF (ILQMOD.LE.1) IPDFOP=2
+Cv4.6.19
+c        IF (ILQMOD.LE.1) IPDFOP=2
+        IF (ILQMOD.LE.1) IPDFOP=1
         WRITE(LUNOUT,'(//A/)')
      *    ' *****  NUCLEAR TARGET  *****'
         WRITE(LUNOUT,'(/2(A,F5.0,/))')
