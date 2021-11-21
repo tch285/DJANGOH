@@ -31,7 +31,7 @@ C                               FRG
 C
 C     with extensions by T. Martini (for hadron polarization, 2012+13)
 C
-C     VERSION 4.6.20,  Nov 21 2021
+C     VERSION 4.6.19,  Sep 01 2021
 C
 C***********************************************************************
 C
@@ -288,7 +288,7 @@ C---PRINT THE TITLE
      3//,10X,'                         HERACLES '
      4//,10X,'     Event generator for deep-inelastic e-P collisions '
      5 /,10X,'              including radiative corrections  '
-     6//,10X,'                 VERSION 4.6.20, 21.11.2021 '//
+     6//,10X,'                 VERSION 4.6.19, 01.09.2021 '//
      8//,10X,'                      H. Spiesberger '//
      9' **************************************************',
      1'****************************',//)
@@ -2394,7 +2394,6 @@ C---LOWER LIMIT IN PHOTON ENERGY (OPTIONAL)
           ISAM2(I)=0
   2     CONTINUE
       ENDIF
-
 C
 C---PRINT KINEMATICS / BEAM PROPERTIES
 C---ELECTRON BEAM
@@ -2544,9 +2543,6 @@ C---PARTON DISTRIBUTION
      *    ' *****  OPTIONS FOR PARTON DISTRIBUTIONS OR      *****',
      *    ' *****  STRUCTURE FUNCTIONS                      *****'
       CALL HSWPDF
-C---Make sure table for FL interpolation is initialized
-      IF (IFLOPT.NE.0) 
-     .   CALL HSLUFL((XMIN+XMAX)/2D0,(Q2MIN+Q2MAX)/2D0,F2EM,FL)
 C
 C---ELASTIC SCATTERING
       IF (IDIPOL.NE.0) THEN
