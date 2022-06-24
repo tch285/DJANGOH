@@ -8,7 +8,7 @@ GFF    = gfortran
 CXX    = gfortran
 
 PROGRAM=djangoh
-LHAPDF=${LHAPDF5}
+LHAPDF=${}# Place the environment variable containing the LHAPDF libraries within the braces.
 #PATH=${LHAPDF}/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:./
 PATH=${LHAPDF}:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:./
 
