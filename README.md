@@ -1,4 +1,4 @@
-# DJANGOH - version 4.6.20-eic (24 June 2022)
+# DJANGOH - version 4.6.20 [eic] (24 June 2022)
 Monte Carlo simulation for deep inelastic lepton nucleon scattering
 
 ## Overview (as given by the original developer)
@@ -20,7 +20,7 @@ spiesber@uni-mainz.de
 
 ## Additional notes for EIC/BNL use:
 
-This repository is a fork of [the original DJANGOH]{https://github.com/spiesber/DJANGOH}
+This repository is a fork of [the original DJANGOH](https://github.com/spiesber/DJANGOH)
 code.  The main simulation code is untouched, but modifications 
 have been made to the user routine `HSUSER` such that the event 
 record contains the necessary information to make `EICTree`s.  In
