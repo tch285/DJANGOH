@@ -2225,10 +2225,8 @@ ckc parent
             ENDIF
 ckc first (4) and last (5) daughter (usually)
             K1=K(I,1)
-            IF(K1.EQ.0.OR.K1.EQ.3.OR.K1.EQ.13.OR.K1.EQ.14) THEN
-              K(I+1,4)=K(I,4)
-              K(I+1,5)=K(I,5)
-            ELSE IF(K1.EQ.1) THEN
+            IF(K1.EQ.0.Or.K1.EQ.1.OR.K1.EQ.3.OR.K1.EQ.13
+     &         .OR.K1.EQ.14) THEN
               K(I+1,4)=K(I,4)
               K(I+1,5)=K(I,5)
             ELSE
