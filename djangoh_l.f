@@ -2230,8 +2230,19 @@ ckc first (4) and last (5) daughter (usually)
               K(I+1,4)=K(I,4)
               K(I+1,5)=K(I,5)
             ELSE
-              K(I+1,4)=K(I,4)+1
-              K(I+1,5)=K(I,5)+1
+
+              IF( K(I,4).LT.5 ) THEN
+                K(I+1,4)=K(I,4)
+              ELSE
+                K(I+1,4)=K(I,4)+1
+              ENDIF
+
+              IF( K(I,5).LT.5 ) THEN
+                K(I+1,5)=K(I,5)
+              ELSE
+                K(I+1,5)=K(I,5)+1
+              ENDIF
+
             ENDIF
             DO 20 J=1,5
             P(I+1,J)=P(I,J)
