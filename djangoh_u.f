@@ -107,7 +107,7 @@ C   This is what we write in the ascii-file
 30      format('I, ievent, IChannel, process, subprocess, nucleon, ',
      &  'struckparton, partontrck, Y, Q2, X, W2, NU, trueY, trueQ2, ',
      &  'trueX, trueW2,trueNu, SIGtot, errSIGtot, D, F1NC, F3NC, ',
-     &  'G1NC,G3NC, A1NC, F1CC, F3CC, G1CC, G5CC, nrTracks')
+     &  'G1NC,G3NC, A1NC, F1CC, F3CC, G1CC, G5CC, nrTracks, status')
         write(LUNEVT,*)'============================================'
 
         write(LUNEVT,*)' I  K(I,1)  K(I,2)  K(I,3)  K(I,4)  K(I,5) ',
@@ -276,8 +276,8 @@ C...write events to file
          write(LUNEVT,32) 0, NEVHEP, ICHNN, LST(23), LST(24), LST(22),
      &   LST(25), LST(26), Y, Q2, X, W2, NU, YHAD, Q2HAD, XHAD, W2HAD,
      &   NUHAD, SIGTOT,SIGTRR, D,F1NC,F3NC,G1NC,G3NC,A1NC,
-     &   F1CC,F3CC,G1CC,G5CC, nrtrack
- 32      format((I4,1x),(I10,1x),6(I6,1x),22(E18.10,1x),I12)
+     &   F1CC,F3CC,G1CC,G5CC, nrtrack, LST(21)
+ 32      format((I4,1x),(I10,1x),6(I6,1x),22(E18.10,1x),I12,I6)
          write(LUNEVT,*)'============================================'
 
          DO I=1,N
