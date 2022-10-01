@@ -268,11 +268,15 @@ C...average time per event
       ENDIF
 C...write events to file
          nrtrack=N
-         NUHAD=(W2HAD+YHAD-MPRO2)/(2.*MPRO2)
+         NUHAD=(Q2HAD)/(2.*MPRO*XHAD)
          W2=Y*(1D0-X)*GSP+MPRO2
-         NU=(W2+Y-MPRO2)/(2.*MPRO2)
+         NU=(Q2)/(2.*MPRO*X)
          D=(S*S-U*U)/(S*S+U*U)
-         CALL HSFG(X,Q2,LLEPT)
+
+         IF(ICHNN.lt.15 .AND. ICHNN.ne.3) THEN
+           CALL HSFG(X,Q2,LLEPT)
+         ENDIF
+
          write(LUNEVT,32) 0, NEVHEP, ICHNN, LST(23), LST(24), LST(22),
      &   LST(25), LST(26), Y, Q2, X, W2, NU, YHAD, Q2HAD, XHAD, W2HAD,
      &   NUHAD, SIGTOT,SIGTRR, D,F1NC,F3NC,G1NC,G3NC,A1NC,
