@@ -1,24 +1,17 @@
-pwd    = ${PWD}
+pwd    = $(PWD)
 SHELL  = /bin/sh
 AR     = ar
 ARFLAGS= -cr
-CC     = gcc
-CXX    = gfortran
 GFF    = gfortran
-CXX    = gfortran
 
 PROGRAM=djangoh
-LHAPDF=${}# Place the environment variable containing the LHAPDF libraries within the braces.
-#PATH=${LHAPDF}/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:./
-PATH=${LHAPDF}:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:./
+# Place the environment variable containing the LHAPDF libraries within the braces.
+LHAPDF=$(LHAPDF6)
 
-#LHAPDF_LIB=$(LHAPDF)/lib
-LHAPDF_LIB=$(LHAPDF)
+# could help if we used lhapdf-config but we don't
+# PATH=$(LHAPDF)/bin:$PATH
+LIBS=-L$(LHAPDF)/lib -lLHAPDF
+INCDIR = -I$(LHAPDF)/include
 
-LIBS=-L$(LHAPDF_LIB) -lLHAPDF 	
+GFFLAGS = -O -Wall -std=legacy -fno-automatic -fcheck=all -g -fbacktrace -ffpe-trap=invalid,zero
 
-CFFLAGS = -O -Wall -pedantic -fno-automatic  -fcheck=all -g -fbacktrace -ffpe-trap=invalid,zero
-FCFLAGS = -O -Wall -pedantic -fno-automatic  -fcheck=all -g -fbacktrace -ffpe-trap=invalid,zero
-FGFLAGS = -O -Wall -pedantic -fno-automatic  -fcheck=all -g -fbacktrace -ffpe-trap=invalid,zero
-
-INCDIR = -I$(LHAPDF)/include 
