@@ -16,17 +16,16 @@ SRCS = djangoh_h.f djangoh_l.f djangoh_u.f djangoh_p.f djangoh_t.f \
 all: gmc_random.o cernlibs.o djangoh
 
 %.o: %.f
-	$(CXX) $(CFFLAGS) -o $@ -c $<
+	$(GFF) $(GFFLAGS) -o $@ -c $<
 
 gmc_random.o: gmc_random.f
-	$(CXX) $(CFFLAGS) -ffree-form -c gmc_random.f -o gmc_random.o
+	$(GFF) $(GFFLAGS) -ffree-form -c gmc_random.f -o gmc_random.o
 
 cernlibs.o: cernlibs.f
-	$(CXX) $(CFFLAGS) -o $@ -c $<
+	$(GFF) $(GFFLAGS) -o $@ -c $<
 
 djangoh: $(OBJS) gmc_random.o cernlibs.o
-	$(CXX) $(CFFLAGS) -o $@ $(OBJS) gmc_random.o cernlibs.o $(LIBS)
-
+	$(GFF) $(GFFLAGS) -o $@ $(OBJS) gmc_random.o cernlibs.o $(LIBS)
 
 clean:
 	rm -f $(OBJS) $(PROGRAM)
