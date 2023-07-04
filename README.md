@@ -1,4 +1,4 @@
-# DJANGOH - version 4.6.20 [eic] (24 June 2022)
+# DJANGOH - version 4.6.21 [eic] (03 July 2023)
 Monte Carlo simulation for deep inelastic lepton nucleon scattering
 
 ## Overview (as given by the original developer)

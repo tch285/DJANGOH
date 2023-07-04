@@ -31,7 +31,7 @@ C                               FRG
 C
 C     with extensions by T. Martini (for hadron polarization, 2012+13)
 C
-C     VERSION 4.6.21,  Dec 05 2022
+C     VERSION 4.6.20,  Nov 21 2021
 C
 C***********************************************************************
 C
@@ -288,7 +288,7 @@ C---PRINT THE TITLE
      3//,10X,'                         HERACLES '
      4//,10X,'     Event generator for deep-inelastic e-P collisions '
      5 /,10X,'              including radiative corrections  '
-     6//,10X,'                 VERSION 4.6.21, 05.12.2022 '//
+     6//,10X,'                 VERSION 4.6.20, 21.11.2021 '//
      8//,10X,'                      H. Spiesberger '//
      9' **************************************************',
      1'****************************',//)
@@ -6315,13 +6315,9 @@ C---ALREADY DONE:
 C       OMEGA=(PH*DKQ + PQH*DKP) / (PH*EQH + PQH*EH)
 C       DCTHGA=(DKP/OMEGA-MEF2/2D0/EH)/PH
 C       CTHGA=1D0-DCTHGA
-C       STHGA=DSQRT(DCTHGA*(2D0-DCTHGA))
+        STHGA=DSQRT(DCTHGA*(2D0-DCTHGA))
         PPP2=PSH*SINEH
-        IF (PPP2.EQ.0D0) THEN 
-          STCPHG=0D0 
-          ELSE 
-          STCPHG=(ESH - DKPS/OMEGA - PSH*CTHGA*COSEH) / PPP2
-        ENDIF
+        STCPHG=(ESH - DKPS/OMEGA - PSH*CTHGA*COSEH) / PPP2
         PHEP(4,IHEP)=OMEGA
         PHEP(3,IHEP)=OMEGA*CTHGA
         PHEP(1,IHEP)=OMEGA*STCPHG
@@ -6744,11 +6740,6 @@ C
       SINH2=1D0-COSEH*COSEH
       IF(SINH2.LE.0D0) THEN
         SINEH=0D0
-        IF (COSEH.LT.0D0) THEN 
-          COSEH=-1D0
-          ELSE
-          COSEH=1D0
-        ENDIF
         ELSE
         SINEH=DSQRT(SINH2)
       ENDIF
@@ -14045,7 +14036,6 @@ C...Parton densities from PYSTFU in PYTHIA 6
         DQ2=DBLE(Q2)
         DX=DBLE(X)
         CALL PYPDFU(KF,DX,DQ2,DXPQY)
-c        CALL DJPDFU(DX,DQ2,DXPQY)
         DO 110 KFL=-6,6
           XPQ(KFL)=REAL(DXPQY(KFL))
  110    CONTINUE
@@ -14483,8 +14473,7 @@ C
 C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C
       SUBROUTINE HSCPDF(IMOD)
-C---Write final number of error calls in polarized PDFs 
-C   with x, Q2 out of range
+C---Write final statistics for calls to HSDVPR with x, Q2 out of range
 C
       IMPLICIT DOUBLE PRECISION (A-H,M,O-Z)
       COMMON /HSOPTN/ INT2(5),INT3(15),ISAM2(5),ISAM3(15),
