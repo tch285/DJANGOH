@@ -1,4 +1,5 @@
 # DJANGOH - version 4.6.21 [eic] (03 July 2023)
+
 Monte Carlo simulation for deep inelastic lepton nucleon scattering
 
 ## Overview (as given by the original developer)
@@ -27,22 +28,16 @@ record contains the necessary information to make `EICTree`s.  In
 addition, the `config.mk` file has been changed to direct the 
 system to the correct location of the LHAPDF libraries.
 
-To install, first check where your LHAPDF libraries are.  This may 
-be in a couple different environment variables:
+DJANGOH requires an installation of LHAPDF. Either LHAPDF5 or LHAPDF6 
+should work. You can check the installed version of LHAPDF by doing
 
-```bash
-echo $LHAPDF
-echo $LHAPDF5
-echo $LHAPDF6
+```
+lhapdf-config --version
 ```
 
-Whichever one gives the LHAPDF libraries, go to `config.mk` and make 
-the necessary modifications to line 11.  For example, if LHAPDF5 
-contains the libraries, then change line 11 to
-
-```bash
-LHAPDF=${LHAPDF5}
-```
+You will also need to check that the LHAPDF libraries are in your
+`LD_LIBRARY_PATH`. If not, run `lhapdf-config --libdir`to determine 
+the location of the LHAPDF libraries.
 
 Next, `cd` into this local repository, rename `makefile-sample` to 
 `makefile` and run `make`.  In my experience, there were a ton of 
@@ -52,13 +47,13 @@ Finally, add the following line of code to your startup script(s)
 such that it can find the right DJANGOH executable (if there are 
 multiple):
 
-```bash
+```
 export PATH="/path/to/DJANGOH:${PATH}"
 ```
 
 Verify by trying
 
-```bash
+```
 which djangoh
 ```
 

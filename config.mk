@@ -8,17 +8,12 @@ GFF    = gfortran
 CXX    = gfortran
 
 PROGRAM=djangoh
-LHAPDF=${}# Place the environment variable containing the LHAPDF libraries within the braces.
-#PATH=${LHAPDF}/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:./
-PATH=${LHAPDF}:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:./
 
-#LHAPDF_LIB=$(LHAPDF)/lib
-LHAPDF_LIB=$(LHAPDF)
+LIBS = $(shell lhapdf-config --ldflags)
 
-LIBS=-L$(LHAPDF_LIB) -lLHAPDF 	
+CFFLAGS = -O -Wall -std=legacy -fno-automatic -fcheck=all -g -fbacktrace -ffpe-trap=invalid,zero
+FCFLAGS = -O -Wall -std=legacy -fno-automatic -fcheck=all -g -fbacktrace -ffpe-trap=invalid,zero
+FGFLAGS = -O -Wall -std=legacy -fno-automatic -fcheck=all -g -fbacktrace -ffpe-trap=invalid,zero
 
-CFFLAGS = -O -Wall -pedantic -fno-automatic  -fcheck=all -g -fbacktrace -ffpe-trap=invalid,zero
-FCFLAGS = -O -Wall -pedantic -fno-automatic  -fcheck=all -g -fbacktrace -ffpe-trap=invalid,zero
-FGFLAGS = -O -Wall -pedantic -fno-automatic  -fcheck=all -g -fbacktrace -ffpe-trap=invalid,zero
-
-INCDIR = -I$(LHAPDF)/include 
+LHAPDFINC = $(shell lhapdf-config --incdir)
+INCDIR = -I$(LHAPDFINC)
